@@ -82,3 +82,12 @@ concept・canon・既出の事実を変えるときは、changes.md に、日付
 - 版を作ったら、必ず `sync_current.py` で `episodes/current/` を最新版に置き換える。
 - 採用は `notes/summary.md` の「採用版：Vn」で表す。current は採用を表さない。
 - コミットは「作品 EPxxx 何をしたか」の粒度で行う。
+
+## 9. 採用済みの話を改稿するとき
+
+後の話の都合で、採用済みの話を直すことがある。
+
+1. 新しい版 `V(n+1).md` を作る（採用版は上書きしない）。`sync_current.py` で current を更新する。
+2. 通常どおり、機械チェック、矛盾チェック、独立レビューを行う。
+3. オーナーが採用したら、`notes/summary.md` の「採用版」と要約を更新する。
+4. 確定していた事実が変わる場合は、`changes.md` に記録し、canon・foreshadow と、その事実を使った後続話を確認する。
