@@ -6,4 +6,4 @@
 - 採用後の記録：`../pachi-book/skills/finalize-episode.md`
 - 章末の点検：`../pachi-book/skills/chapter-review.md`
 
-事実の正はこのリポジトリの台帳と、各話の採用版（`summary.md` の「採用版」）だけ。`episodes/current/` は通し読み用の最新版置き場。会話の記憶より台帳を優先する。
+事実の正はこのリポジトリの台帳と、各話の採用版（`episodes/EPxxx/notes/summary.md` の「採用版」）だけ。`episodes/current/` は通し読み用の最新版置き場。会話の記憶より台帳を優先する。

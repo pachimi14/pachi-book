@@ -5,7 +5,7 @@ Usage (from the work repository root):
     python ../pachi-book/scripts/sync_current.py
 
 episodes/current/ always holds the latest Vn of each episode, adopted or not.
-Adoption is recorded separately in episodes/EPxxx/summary.md ("採用版：Vn").
+Adoption is recorded separately in episodes/EPxxx/notes/summary.md ("採用版：Vn").
 """
 import hashlib
 import re
@@ -38,7 +38,7 @@ def main():
             shutil.copyfile(latest, dst)
         same = sha(dst) == sha(latest)
         ok &= same
-        summary = ep / "summary.md"
+        summary = ep / "notes" / "summary.md"
         adopted = re.search(r"採用版[：:]\s*(V\d+)", summary.read_text(encoding="utf-8")) if summary.is_file() else None
         state = f"採用 {adopted.group(1)}" if adopted else "未採用"
         print(f"{ep.name}: {latest.name}{'（更新）' if changed else ''}  {state}{'' if same else '  不一致'}")

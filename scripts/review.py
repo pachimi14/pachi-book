@@ -5,9 +5,9 @@ Usage (from the work repository root):
     python ../pachi-book/scripts/review.py EP002 V1 [--agent auto|claude|codex]
 
 The reviewer gets only: the rubric (skills/review-episode.md), the episode text,
-the previous episode's summary.md, and canon sections for characters that
+the previous episode's notes/summary.md, and canon sections for characters that
 appear in the text. It runs in an empty temporary directory, so it cannot read
-the repository or the writer's conversation. Output: episodes/EPxxx/review-Vn-<agent>.md
+the repository or the writer's conversation. Output: episodes/EPxxx/notes/review-Vn-<agent>.md
 """
 import argparse
 import os
@@ -68,13 +68,13 @@ def build_prompt(work, ep, ver):
     ep_dir = work / "episodes" / ep
     text = (ep_dir / f"{ver}.md").read_text(encoding="utf-8")
     num = int(ep[2:])
-    prev = work / "episodes" / f"EP{num - 1:03d}" / "summary.md"
+    prev = work / "episodes" / f"EP{num - 1:03d}" / "notes" / "summary.md"
     prev_summary = prev.read_text(encoding="utf-8") if prev.is_file() else "（なし：第1話、または前話が未採用）"
     canon = "\n\n".join(filter(None, [canon_sections(work / "canon" / "characters.md", text),
                                       canon_sections(work / "canon" / "abilities.md", text)]))
     rubric = (ENGINE / "skills" / "review-episode.md").read_text(encoding="utf-8")
     rubric += SEP + (ENGINE / "skills" / "japanese-prose.md").read_text(encoding="utf-8")
-    memo = ep_dir / "memo.md"
+    memo = ep_dir / "notes" / "memo.md"
     kinds = re.search(r"場面の種類：(.*)", memo.read_text(encoding="utf-8")) if memo.is_file() else None
     for kind in re.findall(r"action|streaming|board|everyday", kinds.group(1) if kinds else ""):
         rubric += SEP + (ENGINE / "skills" / "lenses" / f"{kind}.md").read_text(encoding="utf-8")
@@ -114,7 +114,8 @@ def main():
 
     prompt = build_prompt(a.work, a.episode, a.version)
     result = run(agent, exe, prompt)
-    out = a.work / "episodes" / a.episode / f"review-{a.version}-{agent}.md"
+    out = a.work / "episodes" / a.episode / "notes" / f"review-{a.version}-{agent}.md"
+    out.parent.mkdir(exist_ok=True)
     out.write_text(f"# {a.episode} {a.version} 独立レビュー（{agent}）\n\n{result}\n", encoding="utf-8", newline="\n")
     must = len(re.findall(r"\[直すべき\]", result))
     owner = len(re.findall(r"\[オーナー判断\]", result))

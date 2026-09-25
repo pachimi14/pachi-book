@@ -3,7 +3,7 @@
 オーナーが「EPxxx の Vn を採用」と言ったあとに行う。作品リポジトリのルートで作業する。
 
 1. `python ../pachi-book/scripts/sync_current.py` を実行し、`episodes/current/` が最新版になっていることを確認する。
-2. `episodes/EPxxx/summary.md` を書く：
+2. `episodes/EPxxx/notes/summary.md` を書く：
 
 ```
 # EPxxx 要約

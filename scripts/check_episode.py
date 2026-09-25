@@ -59,7 +59,7 @@ def main():
 
     scene_mark = find_scene_mark(a.file)
     if lines and re.match(r"^\s*第[0-9０-９一二三四五六七八九十百]+話", lines[0]):
-        warns.append("1行目に話タイトルがある（タイトルは memo.md に書く）")
+        warns.append("1行目に話タイトルがある（タイトルは notes/memo.md に書く）")
 
     narr_count = indented = 0
     for i, l in enumerate(lines, 1):
