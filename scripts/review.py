@@ -103,7 +103,7 @@ def main():
     prompt = build_prompt(a.work, a.episode, a.version)
     result = run(agent, exe, prompt)
     out = a.work / "episodes" / a.episode / f"review-{a.version}.md"
-    out.write_text(f"# {a.episode} {a.version} 独立レビュー（{agent}）\n\n{result}\n", encoding="utf-8")
+    out.write_text(f"# {a.episode} {a.version} 独立レビュー（{agent}）\n\n{result}\n", encoding="utf-8", newline="\n")
     must = len(re.findall(r"\[直すべき\]", result))
     owner = len(re.findall(r"\[オーナー判断\]", result))
     print(f"{out}  reviewer={agent}  直すべき {must} / オーナー判断 {owner}")
