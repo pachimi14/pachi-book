@@ -7,7 +7,7 @@ Usage (from the work repository root):
 The reviewer gets only: the rubric (skills/review-episode.md), the episode text,
 the previous episode's summary.md, and canon sections for characters that
 appear in the text. It runs in an empty temporary directory, so it cannot read
-the repository or the writer's conversation. Output: episodes/EPxxx/review-Vn.md
+the repository or the writer's conversation. Output: episodes/EPxxx/review-Vn-<agent>.md
 """
 import argparse
 import os
@@ -38,6 +38,12 @@ def find_agent(name):
     for p in KNOWN[name]:
         if p.is_file():
             return str(p)
+    if name == "codex" and os.environ.get("LOCALAPPDATA"):
+        # Codex desktop bundles the CLI under a version-hashed folder; take the newest.
+        bundled = sorted(Path(os.environ["LOCALAPPDATA"], "OpenAI", "Codex", "bin").glob("*/codex.exe"),
+                         key=lambda p: p.stat().st_mtime, reverse=True)
+        if bundled:
+            return str(bundled[0])
     return None
 
 
@@ -102,7 +108,7 @@ def main():
 
     prompt = build_prompt(a.work, a.episode, a.version)
     result = run(agent, exe, prompt)
-    out = a.work / "episodes" / a.episode / f"review-{a.version}.md"
+    out = a.work / "episodes" / a.episode / f"review-{a.version}-{agent}.md"
     out.write_text(f"# {a.episode} {a.version} 独立レビュー（{agent}）\n\n{result}\n", encoding="utf-8", newline="\n")
     must = len(re.findall(r"\[直すべき\]", result))
     owner = len(re.findall(r"\[オーナー判断\]", result))

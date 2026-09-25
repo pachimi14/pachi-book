@@ -36,6 +36,6 @@
 
 1. `python ../pachi-book/scripts/check_episode.py episodes/EPxxx/Vn.md`。ERRORは直して新しい版にする。
 2. `../pachi-book/docs/PROTOCOL.md` 3節の矛盾チェックリストを本文に当てる。欠陥だけを直す。
-3. `python ../pachi-book/scripts/review.py EPxxx Vn`。独立した読み手（新しいエージェント実行）がレビューし、`episodes/EPxxx/review-Vn.md` に保存される。オーナーに別の会話を開かせない。
+3. `python ../pachi-book/scripts/review.py EPxxx Vn`。独立した読み手（新しいエージェント実行）がレビューし、`episodes/EPxxx/review-Vn-<agent>.md` に保存される。オーナーに別の会話を開かせない。
 4. レビューの `[直すべき]` だけを直し、新しい版 `V(n+1).md` にして、1〜3をもう一度実行する（最大2回まで。それでも残るものはオーナーへ報告する）。`[オーナー判断]` は直さずに報告する。
 5. オーナーへの報告は短く：最終版のパス、字数、レビューの総評、直した指摘、オーナー判断の項目。本文は貼らない。
