@@ -8,9 +8,10 @@
 
 1. **面白さが最優先。** 各話は「何が面白いか」を1行で決めてから書く。レビューは面白さを削る方向に使わない。
 2. **記録は残し、強制装置は持たない。** 正典・伏線・変更履歴は台帳として残す。検証はチェックリストとスクリプトで行う。
-3. **正は作品リポジトリ1か所。** 事実は作品リポジトリの台帳と採用本文（`current/`）だけが正。会話の記憶より台帳を優先する。
-4. **採否はオーナーが決める。** AIは候補を出し、オーナーが採用した版だけを `current/` に置く。
+3. **正は作品リポジトリ1か所。** 事実は作品リポジトリの台帳と、採用版の本文（`summary.md` の「採用版」が指す Vn）だけが正。会話の記憶より台帳を優先する。
+4. **採否はオーナーが決める。** AIは版（Vn）を作り、オーナーが採用した版を `summary.md` に記録する。
 5. **読むものは最小限。** 執筆時は手順書が指定する資料だけを読む。過去は要約と台帳で扱う。
+6. **`episodes/current/` は通し読み用。** 各話の最新版を常に置く（採用前も含む）。版を作ったら必ず `sync_current.py` で更新する。
 
 ## 構成
 
@@ -29,7 +30,7 @@
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md
 python ../pachi-book/scripts/review.py EP001 V1   # 独立レビュー。--agent claude|codex、既定は使える方
 python ../pachi-book/scripts/threads.py .
-python ../pachi-book/scripts/promote.py . EP001 V1
+python ../pachi-book/scripts/sync_current.py      # 各話の最新版を episodes/current/ へ
 ```
 
 ## レビュー用 CLI

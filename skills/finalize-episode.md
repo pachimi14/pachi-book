@@ -2,11 +2,12 @@
 
 オーナーが「EPxxx の Vn を採用」と言ったあとに行う。作品リポジトリのルートで作業する。
 
-1. `python ../pachi-book/scripts/promote.py . EPxxx Vn`（一致を確認）
+1. `python ../pachi-book/scripts/sync_current.py` を実行し、`episodes/current/` が最新版になっていることを確認する。
 2. `episodes/EPxxx/summary.md` を書く：
 
 ```
-# EPxxx 要約（採用版 Vn）
+# EPxxx 要約
+- 採用版：Vn
 - あらすじ（3〜5行）：
 - 終了時点の状態：場所・時刻・誰と一緒か・負傷・持ち物
 - 新しく確定した事実：（canon へ反映したもの）

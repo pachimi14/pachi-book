@@ -20,9 +20,9 @@
   episodes/EP001/
     memo.md           その話の「何が面白いか」、流れ、引き
     V1.md V2.md …     版（上書きしない）
-    summary.md        採用版の要約と終了時点の状態
+    summary.md        採用版（「採用版：Vn」）の要約と終了時点の状態
     review-Vn-<agent>.md      独立レビューの結果（review.py が生成）
-  current/EP001.md    採用中の本文（採用版と同一バイト）
+  episodes/current/EP001.md  各話の最新版（通し読み用。版を作るたびに sync_current.py で更新）
 ```
 
 ## 2. 1話の手順（skills/write-episode.md → オーナー確認 → skills/finalize-episode.md）
@@ -31,12 +31,12 @@
 
 1. **メモ**：`memo.md` に、面白さの主役（1行）、流れ（5行前後）、引き（1行）、使う伏線ID、この話で新しく確定する事実を書く。ブロック計画に沿わせる。
 2. **読む**：concept、style、voices、preferences、`skills/japanese-prose.md`、該当する `skills/lenses/`、ブロック計画、同ブロック既出話の summary、直前話の本文、canon のうち登場人物・関係能力の項、`threads.py` が出す未回収伏線のうち関係するもの。
-3. **書く**：`episodes/EPxxx/Vn.md` に新しい版として保存する。
+3. **書く**：`episodes/EPxxx/Vn.md` に新しい版として保存し、`sync_current.py` で `episodes/current/` を更新する。
 4. **機械チェック**：`check_episode.py`。ERRORは直す。WARNは判断する。
 5. **矛盾チェック**（チェックリスト、3節）。欠陥だけを直し、文体の好みで直さない。
 6. **独立レビュー（自動）**：`review.py` が、書き手と別のエージェント実行で本文をレビューし、`review-Vn-<agent>.md` に保存する。`[直すべき]` だけを直して新しい版にする。基準は `skills/review-episode.md`。
 7. **オーナー確認**：最初に「面白いか」、次に欠陥。
-8. **記録**（採用後）：`promote.py` で current へ。`summary.md` を書き、canon・foreshadow・abilities を更新。設定を変えたら changes.md。
+8. **記録**（採用後）：`summary.md` に「採用版：Vn」と要約を書き、canon・foreshadow・abilities を更新。設定を変えたら changes.md。
 
 ## 3. 矛盾チェックリスト
 
@@ -56,7 +56,7 @@
 
 ## 5. 章（ブロック2〜3個、約10話）末の点検（skills/chapter-review.md）
 
-1. **通し読み**：設定資料を渡さない別の読み手（新しい会話など）に、章の current 本文だけを読ませ、どこで飽きたか、分からなかったか、次を読みたいかを聞く。
+1. **通し読み**：設定資料を渡さない別の読み手（新しい会話など）に、章の採用版の本文だけを読ませ、どこで飽きたか、分からなかったか、次を読みたいかを聞く。
 2. **伏線の棚卸し**：未回収の一覧を見て、回収予定を更新する。長く放置されたものは判断する。
 3. **反復の点検**：同じ報酬の型、決め台詞、言い回し、展開の繰り返しを章内で探す。
 4. **正典の整理**：canon の重複・古い状態を整理する。
@@ -78,5 +78,6 @@ concept・canon・既出の事実を変えるときは、changes.md に、日付
 ## 8. 版とコミット
 
 - 版は上書きしない。直すときは新しい番号で保存する。
-- current は採用版と同一バイトにする（`promote.py`）。
+- 版を作ったら、必ず `sync_current.py` で `episodes/current/` を最新版に置き換える。
+- 採用は `summary.md` の「採用版：Vn」で表す。current は採用を表さない。
 - コミットは「作品 EPxxx 何をしたか」の粒度で行う。
