@@ -21,7 +21,7 @@
     memo.md           その話の「何が面白いか」、流れ、引き
     V1.md V2.md …     版（上書きしない）
     summary.md        採用版の要約と終了時点の状態
-    notes.md          レビュー記録（任意）
+    review-Vn.md      独立レビューの結果（review.py が生成）
   current/EP001.md    採用中の本文（採用版と同一バイト）
 ```
 
@@ -34,8 +34,9 @@
 3. **書く**：`episodes/EPxxx/Vn.md` に新しい版として保存する。
 4. **機械チェック**：`check_episode.py`。ERRORは直す。WARNは判断する。
 5. **矛盾チェック**（チェックリスト、3節）。欠陥だけを直し、文体の好みで直さない。
-6. **オーナー確認**：最初に「面白いか」、次に欠陥。
-7. **記録**（採用後）：`promote.py` で current へ。`summary.md` を書き、canon・foreshadow・abilities を更新。設定を変えたら changes.md。
+6. **独立レビュー（自動）**：`review.py` が、書き手と別のエージェント実行で本文をレビューし、`review-Vn.md` に保存する。`[直すべき]` だけを直して新しい版にする。基準は `skills/review-episode.md`。
+7. **オーナー確認**：最初に「面白いか」、次に欠陥。
+8. **記録**（採用後）：`promote.py` で current へ。`summary.md` を書き、canon・foreshadow・abilities を更新。設定を変えたら changes.md。
 
 ## 3. 矛盾チェックリスト
 

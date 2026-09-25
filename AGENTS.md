@@ -16,6 +16,7 @@
 
 - `docs/PROTOCOL.md`：制作手順（1話・ブロック・章、台帳の規則）
 - `skills/write-episode.md`、`skills/finalize-episode.md`、`skills/chapter-review.md`：作業ごとの手順
+- `skills/review-episode.md`：独立レビューの基準（`scripts/review.py` が読む）
 - `scripts/`：機械チェック（作品リポジトリのルートで `python ../pachi-book/scripts/...` として実行）
 - `templates/work/`：新しい作品リポジトリのひな形
 
@@ -23,6 +24,11 @@
 
 ```bash
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md
+python ../pachi-book/scripts/review.py EP001 V1   # 独立レビュー。--agent claude|codex、既定は使える方
 python ../pachi-book/scripts/threads.py .
 python ../pachi-book/scripts/promote.py . EP001 V1
 ```
+
+## レビュー用 CLI
+
+`review.py` は `claude -p` または `codex exec` を空の一時フォルダで実行する。CLI が PATH にない場合は環境変数 `PACHI_CLAUDE` / `PACHI_CODEX` にパスを設定する。既定の選択は `PACHI_REVIEW_AGENT`（auto／claude／codex）。
