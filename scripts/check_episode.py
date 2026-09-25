@@ -61,6 +61,22 @@ def main():
     if lines and re.match(r"^\s*第[0-9０-９一二三四五六七八九十百]+話", lines[0]):
         warns.append("1行目に話タイトルがある（タイトルは notes/memo.md に書く）")
 
+    # Board (掲示板) regions: from a post header "N：名前" until two blank lines.
+    board = set()
+    in_board, blanks = False, 0
+    for i, l in enumerate(lines, 1):
+        s0 = l.strip("　 ")
+        if re.match(r"^[0-9０-９]+[：:]\S", s0):
+            in_board = True
+        if not s0:
+            blanks += 1
+            if blanks >= 2:
+                in_board = False
+            continue
+        blanks = 0
+        if in_board:
+            board.add(i)
+
     narr_count = indented = 0
     for i, l in enumerate(lines, 1):
         if l.count("《") != l.count("》"):
@@ -71,6 +87,10 @@ def main():
             continue
         s = l.strip("　 ")
         head = s[:1]
+        if i in board:
+            if re.search(r"[!?]", l):
+                errors.append(f"{i}行目：半角の!?がある（全角！？にする）")
+            continue
         if re.search(r"[!?]", l):
             errors.append(f"{i}行目：半角の!?がある（全角！？にする）")
         if re.search(r"[！？](?![！？」』〉】）\s　]|$)", l):
@@ -101,7 +121,7 @@ def main():
                     errors.append(f"{i}行目：地の文の対句否定（{name}）…{snippet}… Bを直接書く")
 
     cond = [(i, l.strip()) for i, l in enumerate(lines, 1)
-            if l.strip() and l.lstrip("　 ")[:1] not in DIALOGUE_OPEN
+            if l.strip() and i not in board and l.lstrip("　 ")[:1] not in DIALOGUE_OPEN
             and re.search(r"なら(?![なずばね])[、は]?", l)]
     if len(cond) >= 3:
         for i, s in cond:
