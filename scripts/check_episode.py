@@ -90,6 +90,10 @@ def main():
         if i in board:
             if re.search(r"[!?]", l):
                 errors.append(f"{i}行目：半角の!?がある（全角！？にする）")
+            for name, pat in NEG_PATTERNS:
+                for m in re.finditer(pat, l):
+                    snippet = l[max(0, m.start() - 16):m.end() + 10].strip()
+                    warns.append(f"{i}行目：掲示板の対句否定（{name}）…{snippet}… 打ち消す相手のレスがあるか確認")
             continue
         if re.search(r"[!?]", l):
             errors.append(f"{i}行目：半角の!?がある（全角！？にする）")
