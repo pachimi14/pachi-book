@@ -30,7 +30,7 @@
 方向が安定するまで（最初のブロック）は1話ごとにオーナーが確認する。安定後はブロック単位で確認してよい。
 
 1. **メモ**：`memo.md` に、面白さの主役（1行）、流れ（5行前後）、引き（1行）、使う伏線ID、この話で新しく確定する事実を書く。ブロック計画に沿わせる。
-2. **読む**：concept、style、voices、preferences、ブロック計画、同ブロック既出話の summary、直前話の本文、canon のうち登場人物・関係能力の項、`threads.py` が出す未回収伏線のうち関係するもの。
+2. **読む**：concept、style、voices、preferences、`skills/japanese-prose.md`、該当する `skills/lenses/`、ブロック計画、同ブロック既出話の summary、直前話の本文、canon のうち登場人物・関係能力の項、`threads.py` が出す未回収伏線のうち関係するもの。
 3. **書く**：`episodes/EPxxx/Vn.md` に新しい版として保存する。
 4. **機械チェック**：`check_episode.py`。ERRORは直す。WARNは判断する。
 5. **矛盾チェック**（チェックリスト、3節）。欠陥だけを直し、文体の好みで直さない。

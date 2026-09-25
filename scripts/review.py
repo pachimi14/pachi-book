@@ -22,6 +22,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 ENGINE = Path(__file__).resolve().parent.parent
+SEP = "\n\n---\n\n"
 KNOWN = {
     "claude": [Path.home() / ".local/bin/claude.exe", Path.home() / ".local/bin/claude"],
     "codex": [],
@@ -72,6 +73,11 @@ def build_prompt(work, ep, ver):
     canon = "\n\n".join(filter(None, [canon_sections(work / "canon" / "characters.md", text),
                                       canon_sections(work / "canon" / "abilities.md", text)]))
     rubric = (ENGINE / "skills" / "review-episode.md").read_text(encoding="utf-8")
+    rubric += SEP + (ENGINE / "skills" / "japanese-prose.md").read_text(encoding="utf-8")
+    memo = ep_dir / "memo.md"
+    kinds = re.search(r"場面の種類：(.*)", memo.read_text(encoding="utf-8")) if memo.is_file() else None
+    for kind in re.findall(r"action|streaming|board|everyday", kinds.group(1) if kinds else ""):
+        rubric += SEP + (ENGINE / "skills" / "lenses" / f"{kind}.md").read_text(encoding="utf-8")
     return (f"{rubric}\n\n---\n\n# 直前話の要約\n\n{prev_summary}\n\n# 登場人物の正典\n\n{canon or '（なし）'}\n\n"
             f"# レビュー対象：{ep} {ver}\n\n{text}\n\n---\n\n上の基準の出力形式だけで回答してください。ツールは使わないでください。")
 

@@ -11,6 +11,7 @@
 - 面白さの主役（1行）：
 - 流れ（5行前後）：
 - 引き（1行）：次に何を確かめたくさせるか
+- 場面の種類：action / streaming / board / everyday のうち該当するもの（なければ なし）
 - 使う伏線ID：
 - この話で新しく確定する事実：
 ```
@@ -20,10 +21,11 @@
 ## 2. 読む（これ以外は読まない）
 
 1. `concept.md`、`style.md`、`voices.md`、`preferences.md`
-2. 該当ブロック計画と、同ブロックで既に採用された話の `summary.md`
-3. 直前話の `current/` 本文（全文）
-4. `canon/` のうち、登場人物と使う能力の項だけ
-5. `python ../pachi-book/scripts/threads.py .` の出力のうち、この話に関係する伏線
+2. `../pachi-book/skills/japanese-prose.md`（毎話必ず）と、メモの「場面の種類」に対応する `../pachi-book/skills/lenses/<種類>.md`
+3. 該当ブロック計画と、同ブロックで既に採用された話の `summary.md`
+4. 直前話の `current/` 本文（全文）
+5. `canon/` のうち、登場人物と使う能力の項だけ
+6. `python ../pachi-book/scripts/threads.py .` の出力のうち、この話に関係する伏線
 
 ## 3. 書く
 
@@ -35,7 +37,7 @@
 ## 4. 確認（書き終えたら、オーナーへ報告する前に必ず自動で実行する）
 
 1. `python ../pachi-book/scripts/check_episode.py episodes/EPxxx/Vn.md`。ERRORは直して新しい版にする。
-2. `../pachi-book/docs/PROTOCOL.md` 3節の矛盾チェックリストを本文に当てる。欠陥だけを直す。
+2. `../pachi-book/docs/PROTOCOL.md` 3節の矛盾チェックリストと `japanese-prose.md` を本文に当てる。欠陥だけを直す。地の文の対句否定（チェッカーのERROR）は必ず書き換える。
 3. `python ../pachi-book/scripts/review.py EPxxx Vn`。独立した読み手（新しいエージェント実行）がレビューし、`episodes/EPxxx/review-Vn-<agent>.md` に保存される。オーナーに別の会話を開かせない。
 4. レビューの `[直すべき]` だけを直し、新しい版 `V(n+1).md` にして、1〜3をもう一度実行する（最大2回まで。それでも残るものはオーナーへ報告する）。`[オーナー判断]` は直さずに報告する。
 5. オーナーへの報告は短く：最終版のパス、字数、レビューの総評、直した指摘、オーナー判断の項目。本文は貼らない。
