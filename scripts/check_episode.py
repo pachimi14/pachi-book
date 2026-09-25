@@ -100,6 +100,13 @@ def main():
                 else:
                     errors.append(f"{i}行目：地の文の対句否定（{name}）…{snippet}… Bを直接書く")
 
+    cond = [(i, l.strip()) for i, l in enumerate(lines, 1)
+            if l.strip() and l.lstrip("　 ")[:1] not in DIALOGUE_OPEN
+            and re.search(r"なら(?![なずばね])[、は]?", l)]
+    if len(cond) >= 3:
+        for i, s in cond:
+            warns.append(f"{i}行目：条件の型「〜なら」（地の文で{len(cond)}回）…{s[:24]}…")
+
     if narr_count and narr_count * 0.1 < indented < narr_count * 0.9:
         warns.append(f"地の文の字下げが混在（{indented}/{narr_count}行）")
 
