@@ -18,6 +18,7 @@
 - `skills/write-episode.md`、`skills/finalize-episode.md`、`skills/chapter-review.md`：作業ごとの手順
 - `skills/review-episode.md`：独立レビューの基準（`scripts/review.py` が読む）
 - `skills/japanese-prose.md`：AIの日本語が滑りやすい箇所の点検。対句否定（「Aではない。Bだ」）は地の文で禁止。毎話必ず読む
+- `skills/layout.md`：行・空行・場面転換（既定は◇）・表記・括弧の役割の既定値。毎話必ず読む
 - `skills/lenses/`：場面別の点検（action／streaming／board／everyday）。該当する話だけ読む
 - `scripts/`：機械チェック（作品リポジトリのルートで `python ../pachi-book/scripts/...` として実行）
 - `templates/work/`：新しい作品リポジトリのひな形

@@ -8,6 +8,7 @@
 
 ```
 # EPxxx メモ
+- タイトル：第N話　サブタイトル
 - 面白さの主役（1行）：
 - 流れ（5行前後）：
 - 引き（1行）：次に何を確かめたくさせるか
@@ -21,7 +22,7 @@
 ## 2. 読む（これ以外は読まない）
 
 1. `concept.md`、`style.md`、`voices.md`、`preferences.md`
-2. `../pachi-book/skills/japanese-prose.md`（毎話必ず）と、メモの「場面の種類」に対応する `../pachi-book/skills/lenses/<種類>.md`
+2. `../pachi-book/skills/layout.md` と `../pachi-book/skills/japanese-prose.md`（毎話必ず）と、メモの「場面の種類」に対応する `../pachi-book/skills/lenses/<種類>.md`
 3. 該当ブロック計画と、同ブロックで既に採用された話の `summary.md`
 4. 直前話の `current/` 本文（全文）
 5. `canon/` のうち、登場人物と使う能力の項だけ

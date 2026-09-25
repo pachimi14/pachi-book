@@ -25,6 +25,17 @@ NEG_PATTERNS = [
 ]
 
 
+def find_scene_mark(episode_file):
+    """Read 場面転換記号 from the work's style.md (episodes/EPxxx/Vn.md -> work root)."""
+    for parent in list(episode_file.resolve().parents)[:4]:
+        style = parent / "style.md"
+        if style.is_file():
+            m = re.search(r"場面転換記号[：:]\s*`?([^`\s]+)`?", style.read_text(encoding="utf-8"))
+            if m:
+                return m.group(1)
+    return "◇"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("file", type=Path)
@@ -46,6 +57,10 @@ def main():
     if re.search(r"(?m)^#{1,6}\s|\*\*|^[-*]\s", text):
         errors.append("Markdown記法が本文にある")
 
+    scene_mark = find_scene_mark(a.file)
+    if lines and re.match(r"^\s*第[0-9０-９一二三四五六七八九十百]+話", lines[0]):
+        warns.append("1行目に話タイトルがある（タイトルは memo.md に書く）")
+
     narr_count = indented = 0
     for i, l in enumerate(lines, 1):
         if l.count("《") != l.count("》"):
@@ -54,7 +69,26 @@ def main():
             errors.append(f"{i}行目：|の後に《ルビ》がない")
         if not l.strip():
             continue
-        is_dialogue = l.lstrip("　 ")[:1] in DIALOGUE_OPEN
+        s = l.strip("　 ")
+        head = s[:1]
+        if re.search(r"[!?]", l):
+            errors.append(f"{i}行目：半角の!?がある（全角！？にする）")
+        if re.search(r"[！？](?![！？」』〉】）\s　]|$)", l):
+            warns.append(f"{i}行目：！？の後に全角スペースがない")
+        if re.search(r"。」", l):
+            warns.append(f"{i}行目：台詞の末尾に句点がある")
+        if head in "（(":
+            warns.append(f"{i}行目：（）は使わない（心の声は地の文に）")
+        if head not in "〈【" and re.search(r"[0-9０-９]", s):
+            warns.append(f"{i}行目：算用数字（地の文・台詞は漢数字）")
+        if len(s) > 120:
+            warns.append(f"{i}行目：1行が{len(s)}字（120字以内）")
+        if len(s) <= 12 and re.fullmatch(r"[^\w぀-ヿ一-鿿]+", s) and s not in ("……", "――") and not head in "「『〈【":
+            if s != scene_mark:
+                warns.append(f"{i}行目：場面転換記号が「{s}」（この作品は「{scene_mark}」）")
+            elif not (i >= 2 and not lines[i - 2].strip() and i < len(lines) and not lines[i].strip()):
+                warns.append(f"{i}行目：場面転換記号の前後に空行がない")
+        is_dialogue = head in DIALOGUE_OPEN
         if not is_dialogue:
             narr_count += 1
             indented += l[:1] in "　 "
@@ -73,8 +107,8 @@ def main():
     for j in range(1, len(idx)):
         gap = idx[j] - idx[j - 1] - 1
         gaps.append(gap)
-        if TIME_JUMP.search(lines[idx[j]]) and gap < 2:
-            warns.append(f"{idx[j] + 1}行目：時間の飛びの前が空行{gap}（強い区切りを検討）")
+        if TIME_JUMP.search(lines[idx[j]]) and lines[idx[j - 1]].strip() != scene_mark:
+            warns.append(f"{idx[j] + 1}行目：時間の飛びの前に場面転換記号「{scene_mark}」がない")
 
     levels = {k: gaps.count(k) for k in sorted(set(gaps))}
     print(f"{a.file}  字数 {chars}  空行の段階 {levels}")
