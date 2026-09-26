@@ -98,6 +98,8 @@ def main():
             errors.append(f"{i}行目：|の後に《ルビ》がない")
         if not l.strip():
             continue
+        if i == 1 and has_title:
+            continue
         s = l.strip("　 ")
         head = s[:1]
         if i in board:
