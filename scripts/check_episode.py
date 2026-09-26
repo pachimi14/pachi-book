@@ -141,8 +141,29 @@ def main():
         if TIME_JUMP.search(lines[idx[j]]) and lines[idx[j - 1]].strip() != scene_mark:
             warns.append(f"{idx[j] + 1}行目：時間の飛びの前に場面転換記号「{scene_mark}」がない")
 
+    # Rhythm of narration (see skills/layout.md 1b). Narration lines ending with 。 only.
+    narr = [l.strip("　 ") for i, l in enumerate(lines, 1)
+            if l.strip() and i not in board and l.lstrip("　 ")[:1] not in DIALOGUE_OPEN
+            and l.strip("　 ") != scene_mark and l.rstrip().endswith("。")]
+    rhythm = ""
+    if len(narr) >= 30:
+        sents = [x for l in narr for x in re.findall(r"[^。]+。", l)]
+        spl = len(sents) / len(narr)
+        short = sum(1 for l in narr if len(l) <= 10) / len(narr)
+        cps = sum(l.count("、") for l in narr) / max(1, len(sents))
+        subj = sum(1 for l in narr if re.match(r"^[^、。]{1,8}(?:が|は|も|を|に)、", l))
+        rhythm = f"  文/行 {spl:.2f}  短い行 {short:.0%}  読点/文 {cps:.2f}"
+        if spl < 1.2:
+            warns.append(f"地の文が1文ごとに改行されている（1行あたり{spl:.2f}文。目安1.3前後。同じ流れの2文は1行に続ける）")
+        if short > 0.2:
+            warns.append(f"10字以下の短い行が多い（地の文の{short:.0%}。目安1割前後。溜めの一行は見せ場だけ）")
+        if cps > 0.85:
+            warns.append(f"読点が多い（1文あたり{cps:.2f}。目安0.6〜0.8）")
+        if subj >= 20:
+            warns.append(f"「主語が、」型の読点で始まる行が{subj}行（短い区切りの読点を外す）")
+
     levels = {k: gaps.count(k) for k in sorted(set(gaps))}
-    print(f"{a.file}  字数 {chars}  空行の段階 {levels}")
+    print(f"{a.file}  字数 {chars}  空行の段階 {levels}{rhythm}")
     for e in errors:
         print("ERROR", e)
     for w in warns:
