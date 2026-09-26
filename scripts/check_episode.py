@@ -153,7 +153,7 @@ def main():
     for j in range(1, len(idx)):
         gap = idx[j] - idx[j - 1] - 1
         gaps.append(gap)
-        if TIME_JUMP.search(lines[idx[j]]) and lines[idx[j - 1]].strip() != scene_mark:
+        if TIME_JUMP.search(lines[idx[j]]) and lines[idx[j - 1]].strip() != scene_mark and not (has_title and idx[j - 1] == 0):
             warns.append(f"{idx[j] + 1}行目：時間の飛びの前に場面転換記号「{scene_mark}」がない")
 
     # Rhythm of narration (see skills/layout.md 1b). Narration lines ending with 。 only.
