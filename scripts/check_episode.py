@@ -36,6 +36,15 @@ def find_scene_mark(episode_file):
     return "◇"
 
 
+def title_line_allowed(episode_file):
+    """True if the work's style.md says the body starts with a title line (「本文の1行目にタイトル：あり」)."""
+    for parent in list(episode_file.resolve().parents)[:4]:
+        style = parent / "style.md"
+        if style.is_file():
+            return bool(re.search(r"本文の1行目にタイトル[：:]\s*あり", style.read_text(encoding="utf-8")))
+    return False
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("file", type=Path)
@@ -58,7 +67,11 @@ def main():
         errors.append("Markdown記法が本文にある")
 
     scene_mark = find_scene_mark(a.file)
-    if lines and re.match(r"^\s*第[0-9０-９一二三四五六七八九十百]+話", lines[0]):
+    has_title = bool(lines and re.match(r"^\s*第[0-9０-９一二三四五六七八九十百]+話", lines[0]))
+    if title_line_allowed(a.file):
+        if not has_title:
+            warns.append("1行目に話タイトルがない（この作品は「第N話　サブタイトル」を1行目に書く）")
+    elif has_title:
         warns.append("1行目に話タイトルがある（タイトルは notes/memo.md に書く）")
 
     # Board (掲示板) regions: from a post header "N：名前" until two blank lines.
