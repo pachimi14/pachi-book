@@ -174,11 +174,13 @@ def run(name, prompt, model=None, effort=None):
     return r.stdout.strip(), None
 
 
-def run_many(jobs, model=None, effort=None):
-    """jobs: [(name, prompt, tag)] を並行で回し、[(tag, 本文 or None, エラー)] を返す。"""
+def run_many(jobs, model=None, effort=None, workers=None):
+    """jobs: [(name, prompt, tag)] を並行で回し、[(tag, 本文 or None, エラー)] を返す。
+    workers：同時に回す数の上限（既定は全部。数十本を回すときは PACHI_WORKERS か引数で絞る）。"""
     if not jobs:
         return []
-    with ThreadPoolExecutor(len(jobs)) as pool:
+    workers = workers or int(os.environ.get("PACHI_WORKERS", "0")) or len(jobs)
+    with ThreadPoolExecutor(min(workers, len(jobs))) as pool:
         futs = [pool.submit(run, n, p, model, effort) for n, p, _ in jobs]
         return [(tag, *f.result()) for (_, _, tag), f in zip(jobs, futs)]
 
