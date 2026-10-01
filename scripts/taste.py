@@ -76,9 +76,10 @@ def from_git():
                     continue  # 題名の行は除く（一律のきまりで変えて戻した記録が混ざるため）
                 if re.sub(r"[、。\s]", "", old) == re.sub(r"[、。\s]", "", new):
                     continue  # 読点・空白だけの直しは除く
-                ctx = "\n".join(x for x in a[max(0, i1 - 3):i1] if x.strip())
+                ctx = "\n".join(x for x in a[max(0, i1 - 12):i1] if x.strip())   # 前後を広めに（2026-10-01：前3行では筋の直しを外した）
+                after = "\n".join(x for x in a[i2:i2 + 5] if x.strip())
                 out.append({"src": "git", "id": f"{h[:7]}:{path}:{i1}", "ep": path.split("/")[1], "subject": subj[:80],
-                            "context": ctx, "worse": old, "better": new, "reason": ""})
+                            "context": ctx, "after": after, "worse": old, "better": new, "reason": ""})
     return out
 
 
@@ -149,16 +150,43 @@ def examples_text(ex):
                      + (f"\n  理由：{p['reason']}" if p["reason"] else "") for p in ex)
 
 
-def context_block(ex):
+PROFILE = """下は、ある連載のオーナー（作者）が、書き手の文を直した・選んだ記録です（選ばなかった版 → 選んだ版、理由つきのものもある）。
+このオーナーの好みを、次に別の文を見たときに「オーナーならどちらを選ぶか」を当てられるように、傾向として書き出してください。
+- 一般論（読みやすく、など）ではなく、このオーナーに特有の向きを書く。何を削るか、何を足すか、どんな一言を嫌うか、どこで具体を求めるか、筋のどこにうるさいか。
+- 傾向ごとに、記録の中の件数のめやすと、短い例（選ばなかった → 選んだ）を一つ。
+- 迷ったときの決め方（例：迷ったら短いほう、など）があれば最後に書く。
+- 15〜25項目。ツールは使わないでください。
+"""
+
+
+def profile_text():
+    p = tdir() / "profile.md"
+    return p.read_text(encoding="utf-8") if p.is_file() else ""
+
+
+def make_profile(ex=None):
+    ex = ex if ex is not None else pairs()
+    text, err = A.run(A.agents()[0], PROFILE + A.SEP + examples_text(ex), None, "xhigh")
+    if err:
+        sys.exit(err)
+    return text
+
+
+def context_block(ex, profile=None):
+    prof = profile if profile is not None else profile_text()
     return (A.section("良い例（読者とオーナーが面白いと言った場面）", A.doc("good_examples")) + A.SEP
+            + (A.section("オーナーの好みの傾向（記録から書き出したもの）", prof) + A.SEP if prof else "")
             + A.section("オーナーが選んだ例（選ばなかった版 → 選んだ版）", examples_text(ex)))
 
 
 def items_text(items):
     out = []
-    for i, (ctx, x, y) in enumerate(items, 1):
+    for i, it in enumerate(items, 1):
+        ctx, x, y = it[:3]
+        after = it[3] if len(it) > 3 else ""
         c = f"（直前の文）\n{ctx}\n" if ctx else ""
-        out.append(f"## 問{i}\n{c}X：\n{x or '（この箇所の文を削った版）'}\nY：\n{y or '（この箇所の文を削った版）'}")
+        d = f"（直後の文）\n{after}\n" if after else ""
+        out.append(f"## 問{i}\n{c}X：\n{x or '（この箇所の文を削った版）'}\nY：\n{y or '（この箇所の文を削った版）'}\n{d}")
     return "\n\n".join(out)
 
 
@@ -208,21 +236,26 @@ def evaluate(n, seed, strict, batch=10):
     hc = {h["id"].split(":")[0] for h in hold}
     ex = [p for p in P if p not in hold and not (strict and p["id"].split(":")[0] in hc)
           and not any(overlap(p["worse"] + p["better"], h["worse"]) or overlap(p["worse"] + p["better"], h["better"]) for h in hold)]
+    prof = make_profile(ex)  # 伏せた組を除いた例だけから書き出す（答えの持ち込みを防ぐ）
+    (tdir() / f"profile-eval-s{seed}.md").write_text(prof, encoding="utf-8")
     jobs, keys = [], {}
-    for cond in ("base", "taste"):
+    for cond in ("base", "taste", "profile"):
         for b in range(0, len(hold), batch):
             chunk = hold[b:b + batch]
             for flip in (False, True):
                 items, key = [], []
                 for i, p in enumerate(chunk):
                     first_better = flip ^ (i % 2 == 1)
-                    items.append((p["context"], p["better"], p["worse"]) if first_better else (p["context"], p["worse"], p["better"]))
+                    af = p.get("after", "")
+                    items.append((p["context"], p["better"], p["worse"], af) if first_better else (p["context"], p["worse"], p["better"], af))
                     key.append("X" if first_better else "Y")
-                ctx = (A.section("良い例", A.doc("good_examples")) if cond == "base" else context_block(ex))
+                ctx = (A.section("良い例", A.doc("good_examples")) if cond == "base"
+                       else context_block(ex, "") if cond == "taste" else context_block(ex, prof))
                 prompt = ASK + A.SEP + ctx + A.SEP + "# 問題\n\n" + items_text(items)
                 jobs.append((A.agents()[0], prompt, (cond, b, flip)))
                 keys[(cond, b, flip)] = (key, [p["id"] for p in chunk])
-    res, both = {"base": [0, 0], "taste": [0, 0]}, {}
+    res, both = {"base": [0, 0], "taste": [0, 0], "profile": [0, 0]}, {}
+    rows = []
     for tag, text, err in A.run_many(jobs):
         got = dict(re.findall(r"問(\d+)\s*[:：]\s*([XY])", text or ""))
         key, ids = keys[tag]
@@ -231,15 +264,24 @@ def evaluate(n, seed, strict, batch=10):
             res[tag[0]][0] += ok
             res[tag[0]][1] += 1
             both.setdefault((tag[0], ids[i - 1]), []).append(ok)
+            rows.append({"cond": tag[0], "id": ids[i - 1], "ok": ok})
         if err:
             print(tag, err)
     stable = {c: sum(1 for (cc, _), v in both.items() if cc == c and all(v)) for c in res}
+    consistent = {c: sum(1 for (cc, _), v in both.items() if cc == c and (all(v) or not any(v))) for c in res}
     day = f"{datetime.date.today()}-s{seed}" + ("-strict" if strict else "")
     lines = [f"# 好みの判定役の測定（{day}）", "",
              f"伏せた組 {len(hold)}（git の履歴・選択の記録から）、渡した例 {len(ex)}（伏せた組と重なる例{'・同じコミットの例' if strict else ''}は外した）、順番2通り。", "",
-             "| 条件 | 当たり（判定の数） | 両方の順で当てた組 |", "|---|---|---|"]
+             "| 条件 | 当たり（判定の数） | 両方の順で当てた組 | 両方の順で答えがそろった組だけの当たり（そろわない組は「判定できず」） |", "|---|---|---|---|"]
     for c, (ok, m) in res.items():
-        lines.append(f"| {c}（{'良い例だけ' if c == 'base' else '良い例＋オーナーが選んだ例'}） | {ok}/{m}（{ok / max(m, 1):.0%}） | {stable[c]}/{len(hold)} |")
+        cs = consistent[c]
+        lines.append(f"| {c}（{ {'base': '良い例だけ', 'taste': '良い例＋オーナーが選んだ例', 'profile': '＋例から書き出した好みの傾向'}[c] }） | {ok}/{m}（{ok / max(m, 1):.0%}） | {stable[c]}/{len(hold)} | {stable[c]}/{cs}（{stable[c] / max(cs, 1):.0%}）・答えた組 {cs}/{len(hold)} |")
+    hmap = {h["id"]: h for h in hold}
+    miss = {}
+    for r in rows:
+        if r["cond"] == "profile" and not r["ok"]:
+            miss[r["id"]] = miss.get(r["id"], 0) + 1
+    (tdir() / f"eval-{day}-miss.json").write_text(json.dumps([dict(hmap[k], miss=v) for k, v in miss.items()], ensure_ascii=False, indent=1), encoding="utf-8")
     out = tdir() / f"eval-{day}.md"
     out.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print("\n".join(lines))
@@ -247,7 +289,7 @@ def evaluate(n, seed, strict, batch=10):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=("build", "eval"))
+    ap.add_argument("cmd", choices=("build", "eval", "profile"))
     ap.add_argument("--n", type=int, default=40)
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--strict", action="store_true")
@@ -256,6 +298,10 @@ def main():
         from collections import Counter
         P = build()
         print(len(P), dict(Counter(p["src"] for p in P)))
+    elif a.cmd == "profile":
+        out = tdir() / "profile.md"
+        out.write_text(f"# オーナーの好みの傾向（taste.py profile。{datetime.date.today()}。記録 {len(pairs())} 組から）\n\n" + make_profile(), encoding="utf-8")
+        print(out.relative_to(A.WORK))
     else:
         evaluate(a.n, a.seed, a.strict)
 
