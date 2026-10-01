@@ -43,6 +43,7 @@ DEFAULTS = {
     "owner_eye": "blocks/OWNER-EYE.md",        # オーナーの目（書いたあとの点検）
     "bad_examples": "blocks/BAD-EXAMPLES.md",  # オーナーが直した文の組
     "good_examples": "blocks/GOOD-EXAMPLES.md",
+    "line_aim": None,                          # 主人公の「らしい一言」の照準の問い（例 blocks/FAN-LINE-AIM.md）
     "fixed_numbers": [],                       # 台帳で決まっている数字（数字の検出から除く。例 "十年"）
 }
 
