@@ -33,7 +33,8 @@ python ../pachi-book/scripts/check_all.py EP001 V1 --status          # 必須の
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V2.md --base episodes/EP001/V1.md   # 直しで字数が増えすぎていないか
 python ../pachi-book/scripts/check_reader.py EP001 V1                # 初見読者レビュー（採用前の最後に一回）
 python ../pachi-book/scripts/check_logic.py EP001 V1 --old "元の文" --new "案"   # 直し案の点検
-# メモ
+# 方向・あらすじ・メモ
+python ../pachi-book/scripts/story_direction.py --target "第3章"   # ストーリーテラー：市場の実績と作品の流れから、次の章の方向の案（chapters/DIRECTION-日付.md）
 python ../pachi-book/scripts/check_memo.py chapters/CH-01-STORY.md    # 章のあらすじの監査（通し読み・二択・現場）
 python ../pachi-book/scripts/check_memo.py blocks/CH-01-A-memos.md   # 各話のメモの監査
 python ../pachi-book/scripts/check_memo.py <採用した話のメモ> <あとのメモ> --after EP001   # 採用後の波及の監査
