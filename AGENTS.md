@@ -16,7 +16,7 @@
 ## 構成
 
 - `docs/PROTOCOL.md`：制作手順（1話・ブロック・章、台帳の規則）
-- `skills/write-episode.md`、`skills/finalize-episode.md`、`skills/chapter-review.md`：作業ごとの手順
+- `skills/write-episode.md`、`skills/revise-episode.md`（直す：指摘・点検の結果・二択の案）、`skills/finalize-episode.md`、`skills/chapter-review.md`：作業ごとの手順
 - `skills/japanese-prose.md`：AIの日本語が滑りやすい箇所。対句否定（「Aではない。Bだ」）は地の文で禁止。書いたあとの点検で使う
 - `skills/layout.md`：行・空行・場面転換（既定は◇）・表記・括弧の役割の既定値。書く前に読む
 - `skills/lenses/`：場面別の点検（action／streaming／board／everyday）。該当する話だけ読む
@@ -32,7 +32,8 @@ python ../pachi-book/scripts/check_all.py EP001 V1                   # 機械・
 python ../pachi-book/scripts/check_all.py EP001 V1 --status          # 必須の対応が空の行（0 になるまで埋める）
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V2.md --base episodes/EP001/V1.md   # 直しで字数が増えすぎていないか
 python ../pachi-book/scripts/check_reader.py EP001 V1                # 初見読者レビュー（採用前の最後に一回）
-python ../pachi-book/scripts/check_logic.py EP001 V1 --old "元の文" --new "案"   # 直し案の点検
+python ../pachi-book/scripts/propose.py EP001 V1 --issue "指摘" --cand 案A.txt --cand 案B.txt   # 直し案の点検と番号（P…）。オーナーに見せる案は必ずこれを通す
+python ../pachi-book/scripts/propose.py EP001 V1 --apply P…-A --to V2   # 選ばれた案を、点検した文のまま新しい版に入れる
 # 方向・あらすじ・メモ
 python ../pachi-book/scripts/story_direction.py --target "第3章"   # ストーリーテラー：市場の実績と作品の流れから、次の章の方向の案（chapters/DIRECTION-日付.md）
 python ../pachi-book/scripts/check_memo.py chapters/CH-01-STORY.md    # 章のあらすじの監査（通し読み・二択・現場）
