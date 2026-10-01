@@ -23,6 +23,9 @@
   …
 
 出力: episodes/EPxxx/notes/proposals.md（人が読む記録）と proposals.json（--apply が読む）。
+案が二つ以上のときは、オーナーの好みの判定役（taste.py）にも総当たりで比べさせ、「好みの判定（参考）」を出す。
+--apply でオーナーが選んだ案と選ばなかった案を <taste_dir>/choices.jsonl に記録する（判定役の例が増える）。
+オーナーが案を選ばず自分で書いたときは、--owner-wrote 書いた文.txt --batch P<日時> で、オーナーの文を選んだ側として記録する。
 """
 import argparse
 import datetime
@@ -35,6 +38,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import agent as A  # noqa: E402
 import check_logic  # noqa: E402
+import taste  # noqa: E402
 
 LINE_NO = re.compile(r"^WARN\s+\d+(〜\d+)?行目：")
 
@@ -90,6 +94,21 @@ def check(ep, ver, cands):
     return mech, {key: (t, e) for key, t, e in A.run_many(jobs)}
 
 
+def cand_text(pairs):
+    return "\n／\n".join(new or "（削除）" for _, new in pairs)
+
+
+def record_choice(ep, chosen_id, chosen_text, sibs, db):
+    """オーナーの選択を、好みの判定役の材料に足す。"""
+    rec = {"date": str(datetime.date.today()), "ep": ep, "issue": next(iter(sibs.values()))["issue"],
+           "context": next(iter(sibs.values())).get("context", ""),
+           "chosen_id": chosen_id or "owner", "chosen_text": chosen_text,
+           "rejected": [{"id": k, "text": cand_text(v["pairs"])} for k, v in sibs.items()]}
+    with (taste.tdir() / "choices.jsonl").open("a", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    taste.build()
+
+
 def verdict(text):
     m = re.search(r"##\s*判定\s*\n-\s*(\S+?)[：:（(\s]", text or "")
     return m.group(1) if m else "不明"
@@ -105,10 +124,21 @@ def main():
     ap.add_argument("--new")
     ap.add_argument("--apply", help="入れる案の番号（P…）")
     ap.add_argument("--to", help="--apply で作る新しい版（例 V8）")
+    ap.add_argument("--owner-wrote", help="オーナーが自分で書いた文のファイル（案は全部選ばれなかったとして記録）")
+    ap.add_argument("--batch", help="--owner-wrote のとき、比べた案の組（P<日時>）")
+    ap.add_argument("--no-taste", action="store_true", help="好みの判定を回さない")
     a = ap.parse_args()
     ep, ver = a.episode, a.version
     store = A.notes_dir(ep) / "proposals.json"
     db = json.loads(store.read_text(encoding="utf-8")) if store.is_file() else {}
+
+    if a.owner_wrote:
+        sibs = {k: v for k, v in db.items() if a.batch and k.startswith(a.batch + "-")}
+        if not sibs:
+            sys.exit("--batch の案が記録にない")
+        record_choice(ep, None, Path(a.owner_wrote).read_text(encoding="utf-8").strip(), sibs, db)
+        print(f"オーナーの文を選んだ側として記録した（選ばれなかった案 {len(sibs)}）")
+        return
 
     if a.apply:
         if a.apply not in db or not a.to:
@@ -124,6 +154,10 @@ def main():
         subprocess.run([sys.executable, str(Path(__file__).resolve().parent / "sync_current.py")], cwd=A.WORK,
                        capture_output=True)
         w, size = warns(dst, src)
+        stamp_key = a.apply.rsplit("-", 1)[0]
+        sibs = {k: v for k, v in db.items() if k.startswith(stamp_key + "-") and k != a.apply}
+        if sibs:
+            record_choice(ep, a.apply, cand_text(rec["pairs"]), sibs, db)
         print(f"{dst.relative_to(A.WORK)} に {a.apply} を入れた（筋の点検：{rec['verdict']}）")
         if rec["verdict"] != "通る":
             print(f"注意：この案は筋の点検で「{rec['verdict']}」だった。オーナーに見せたときの理由どおりかを確かめる（proposals.md）")
@@ -140,20 +174,33 @@ def main():
     keys = [f"P{stamp}-{chr(65 + i)}" for i in range(len(cands_list))]
     cands = dict(zip(keys, cands_list))
     mech, logic = check(ep, ver, cands)
+    base_text = (A.WORK / "episodes" / ep / f"{ver}.md").read_text(encoding="utf-8")
+    first_old = cands_list[0][0][0]
+    pre = base_text[:base_text.index(first_old)].rstrip("\n").split("\n")
+    context = "\n".join(x for x in pre[-3:] if x.strip())
+    wins, stable, terr = ({}, 0, None)
+    if len(cands) >= 2 and not a.no_taste:
+        wins, stable, terr = taste.judge(context, {k: cand_text(v) for k, v in cands.items()})
     lines = [f"\n## {stamp} {ep} {ver}：{a.issue or '（指摘の要約なし）'}\n"]
     for key, pairs in cands.items():
         text, err = logic[key]
         v = "失敗" if err else verdict(text)
         db[key] = {"version": ver, "issue": a.issue, "pairs": pairs, "verdict": v,
-                   "new_warns": mech[key][0]}
-        lines.append(f"### {key}（筋：{v}／機械：新しい警告 {len(mech[key][0])}）")
+                   "new_warns": mech[key][0], "context": context, "taste": wins.get(key)}
+        tj = f"／好み：{wins[key]:g}勝" if key in wins else ""
+        lines.append(f"### {key}（筋：{v}／機械：新しい警告 {len(mech[key][0])}{tj}）")
         for old, new in pairs:
             lines.append(f"- 元：{old}\n- 案：{new or '（削除）'}")
         lines.append("\n".join(["", "機械：", *(mech[key][1] + mech[key][0] or ["（新しい警告なし）"])]))
         lines.append(f"\n筋の点検：\n\n{err or text}\n")
-        print(f"{key}  筋：{v}  機械：新しい警告 {len(mech[key][0])}  {mech[key][1][0] if mech[key][1] else ''}")
+        print(f"{key}  筋：{v}  機械：新しい警告 {len(mech[key][0])}" + (f"  好み：{wins[key]:g}勝" if key in wins else "") + f"  {mech[key][1][0] if mech[key][1] else ''}")
         for x in mech[key][0][:5]:
             print("   " + x)
+    if wins:
+        note = (f"好みの判定（参考。taste.py。総当たりを両方の順で聞いた勝ち数。両方の順で答えがそろった組 {stable:.0%}。"
+                "測定では当たり75〜79%で、決め手には足りない）" + (f"　失敗：{terr}" if terr else ""))
+        lines.insert(1, note + "\n")
+        print(note)
     store.write_text(json.dumps(db, ensure_ascii=False, indent=1), encoding="utf-8")
     md = A.notes_dir(ep) / "proposals.md"
     head = "" if md.is_file() else ("# 直し案の記録\n\nオーナーに見せた案と、その点検の結果。番号（P…）で `propose.py --apply` が記録した文をそのまま入れる。\n")
