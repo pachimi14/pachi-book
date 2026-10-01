@@ -120,6 +120,7 @@ def main():
     ap.add_argument("file", type=Path)
     ap.add_argument("--min", type=int, default=3000)
     ap.add_argument("--max", type=int, default=5000)
+    ap.add_argument("--base", type=Path, help="直す前の版。直しで字数がどれだけ増えたかを見る（2026-10-01）")
     a = ap.parse_args()
     text = a.file.read_text(encoding="utf-8-sig")
     lines = text.split("\n")
@@ -251,6 +252,11 @@ def main():
         if subj >= 20:
             warns.append(f"「主語が、」型の読点で始まる行が{subj}行（短い区切りの読点を外す）")
 
+    if a.base and a.base.is_file():
+        before = len(re.sub(r"\s", "", a.base.read_text(encoding="utf-8-sig")))
+        grow = (chars - before) / (before or 1)
+        if grow > 0.10:
+            warns.append(f"直しで字数が {grow:+.0%}（{before}→{chars}）。点検に全部応えて足しすぎていないか。オーナーの直しは前後 ±5% ほど")
     root = work_root(a.file)
     warns += prose_checks(lines, root)
     extra, summary = plugin_checks(root, a.file, lines)

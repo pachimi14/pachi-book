@@ -29,7 +29,8 @@
 # 本文
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md   # 機械の点検（作品の tools/work_checks.py も読む）
 python ../pachi-book/scripts/check_all.py EP001 V1                   # 機械・筋・声の点検をまとめた対応表 notes/check-V1.md
-python ../pachi-book/scripts/check_all.py EP001 V1 --status          # 対応が空の行（0 になるまで埋める）
+python ../pachi-book/scripts/check_all.py EP001 V1 --status          # 必須の対応が空の行（0 になるまで埋める）
+python ../pachi-book/scripts/check_episode.py episodes/EP001/V2.md --base episodes/EP001/V1.md   # 直しで字数が増えすぎていないか
 python ../pachi-book/scripts/check_reader.py EP001 V1                # 初見読者レビュー（採用前の最後に一回）
 python ../pachi-book/scripts/check_logic.py EP001 V1 --old "元の文" --new "案"   # 直し案の点検
 # メモ
@@ -52,6 +53,8 @@ python ../pachi-book/scripts/backtest.py          # 点検ツールの回帰テ�
 - CLI が PATH にない場合は `PACHI_CLAUDE` / `PACHI_CODEX` にパスを設定する。打ち切りは `PACHI_TIMEOUT`（既定 900 秒）。
 - 作品の資料の場所（あらすじ・台帳・口調カード・オーナーの目・ダメな例・良い例）は、作品ルートの `pachi.json` で上書きできる（既定は `scripts/agent.py` の DEFAULTS）。
 - 点検は直す方向だけを言い、直した文は出さない（ツールの直し案がそのまま本文に入り、オーナーに消される一行を生んでいたため。2026-10-01）。
+- 対応表は「必須」（事実・筋・詰まる所）と「参考」（文体など）に分ける。参考は書き手が選ぶ。全部に従うと本文が長くなり、オーナーの直しから離れる（2026-10-01 の実験）。
+- 面白さは点検で決めない。LLM の判定役はオーナーの版を選べなかった（2026-10-01）。面白さの判断はオーナーがする。
 
 ## 改善の測り方
 

@@ -6,12 +6,12 @@
   筋：check_logic.py（1回）
   声：check_voice.py（2回。ぶれを補う）
 そのあと、まとめ役が重なりを一つにし、重い順に番号を振って notes/check-Vn.md に書く。
-表の「対応」は書き手が埋める（直した／直さない：理由）。全部埋まるまでオーナーに渡さない。
+表は「必須」と「参考」に分かれる。必須の「対応」は書き手が埋める（直した／直さない：理由）。参考は書き手が選ぶ。
 （2026-10-01 の検証：ツールが拾ったのに直さずに渡した所があり、オーナーがあとで直していた）
 
 使い方（作品リポジトリのルートで）:
   python ../pachi-book/scripts/check_all.py EP023 V2          # 点検して対応表を作る
-  python ../pachi-book/scripts/check_all.py EP023 V2 --status # 対応が空の行を数える（0 でなければ終了コード 1）
+  python ../pachi-book/scripts/check_all.py EP023 V2 --status # 必須の対応が空の行を数える（0 でなければ終了コード 1）
 初見読者レビュー（check_reader.py）は別。採用前の最後に一回回す。
 """
 import argparse
@@ -37,13 +37,22 @@ MERGE = """あなたはこの連載の編集長です。一つの話に、別々
 - 直した文は書かない。直す方向を一言だけ書く。
 - 筋の点検の「確実」は、本文に照らして間違っていない限り全部残す。行の数で削らない（2026-10-01：25行で打ち切って当たりを落としていた）。
 
+表は二つに分ける（2026-10-01：全部の行に従うと本文が4割長くなり、オーナーの直しとかけ離れた）。
+- 必須：事実／つながり／指示語／話し手／立場／段階／人の動き／読者が知らない言葉／現場の細部。読者が一度で詰まる・筋が食い違う所。
+- 参考：AIっぽい／ダメな例／比喩／緊張／足りない／書きすぎ／リズム／数字。直すかどうかは書き手が選ぶ。
+
 次の形式だけで答えてください。ツールは使わないでください。
 
+## 必須
 | ID | 場所（本文を短く引用） | 種類 | 何がおかしいか | 直す方向 | 出どころ | 対応 |
 |---|---|---|---|---|---|---|
 | C01 | 「…」 | 事実 | … | … | 筋・声2回 | 未 |
 
-種類は次のどれか：事実／つながり／指示語／話し手／立場／段階／人の動き／読者が知らない言葉／現場の細部／AIっぽい／ダメな例／比喩／緊張／足りない／書きすぎ／リズム／数字
+## 参考
+| ID | 場所（本文を短く引用） | 種類 | 何がおかしいか | 直す方向 | 出どころ | 対応 |
+|---|---|---|---|---|---|---|
+| R01 | 「…」 | AIっぽい | … | … | 声2回 | 未 |
+
 出どころは「機械」「筋」「声1回」「声2回」の組み合わせ。対応の欄は全部「未」にする。
 """
 
@@ -59,9 +68,12 @@ def status(ep, ver):
     p = A.notes_dir(ep) / f"check-{ver}.md"
     if not p.is_file():
         sys.exit(f"{p.relative_to(A.WORK)} がない（先に点検を回す）")
-    rows = [l for l in p.read_text(encoding="utf-8").splitlines() if re.match(r"\|\s*C\d+", l)]
+    lines = p.read_text(encoding="utf-8").splitlines()
+    rows = [l for l in lines if re.match(r"\|\s*C\d+", l)]
+    ref = [l for l in lines if re.match(r"\|\s*R\d+", l)]
     open_rows = [l for l in rows if re.search(r"\|\s*未\s*\|?\s*$", l)]
-    print(f"{p.relative_to(A.WORK)}：{len(rows)} 行、対応が空 {len(open_rows)} 行")
+    done_ref = [l for l in ref if not re.search(r"\|\s*未\s*\|?\s*$", l)]
+    print(f"{p.relative_to(A.WORK)}：必須 {len(rows)} 行（対応が空 {len(open_rows)}）、参考 {len(ref)} 行（直した・判断した {len(done_ref)}）")
     for l in open_rows:
         print("  " + l[:80])
     sys.exit(1 if open_rows else 0)
@@ -99,7 +111,9 @@ def main():
         sys.exit(f"まとめ：{err}")
     out = A.notes_dir(ep) / f"check-{ver}.md"
     head = (f"# 点検の対応表 {ep} {ver}\n\n"
-            "「対応」を書き手が埋める：直した（どう直したか一言）／直さない：理由。全部埋めてからオーナーに渡す。\n"
+            "「必須」の対応を書き手が全部埋める：直した（どう直したか一言）／直さない：理由。埋めてからオーナーに渡す。\n"
+            "「参考」は直すかどうかを書き手が選ぶ（全部に従わない。全部に従うと本文が長くなり、オーナーの直しから離れる）。\n"
+            "直した版は `check_episode.py 新しい版 --base 直す前の版` で字数の増え方を確かめる。\n"
             f"確かめ方：`python ../pachi-book/scripts/check_all.py {ep} {ver} --status`\n"
             "直した版で点検をかけ直すときは、新しい版の番号で回す。\n\n")
     print(A.write(out, head + table + f"\n\n## 機械の点検（元の出力）\n\n```\n{mech}\n```"))

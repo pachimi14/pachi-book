@@ -40,7 +40,7 @@
 1. **メモ（ブロック単位）**：ブロックの全話のメモを先に作る。`check_memo.py` で監査し、作者が決める分かれ目を二択にしてオーナーに決めてもらう。現場の細部は先に調べるか、書かないと決める。
 2. **温度の確認**：見せ場の一場面だけ書いてオーナーに見せる。
 3. **全文**：`episodes/EPxxx/Vn.md` に新しい版として保存し、`sync_current.py`。
-4. **点検**：`check_episode.py`（ERROR は直す）→ `check_all.py`（対応表）→ 対応を全部埋める（`--status` が 0）。
+4. **点検**：`check_episode.py`（ERROR は直す）→ `check_all.py`（対応表。必須と参考）→ 必須の対応を全部埋める（`--status` が 0）。参考は書き手が選ぶ。直した版は `check_episode.py --base` で字数の増えすぎを見る。
 5. **初見読者レビュー**：`check_reader.py` を採用前の最後に一回。【分からない】を直す。
 6. **オーナー確認**：最初に「面白いか」、次に欠陥。オーナーの指摘で直したコミットには `(owner:A〜F)` を付ける。
 7. **記録**（採用後）：`notes/summary.md`、canon・foreshadow・abilities・あらすじ、波及の監査（`check_memo.py --after`）。
