@@ -26,6 +26,7 @@
   tools/work_checks.py  作品だけの機械点検（任意。check_episode.py が読む）
   research/           調べたこと。tool-backtest/truth.json は点検ツールの回帰テストの正解
   chapters/CH-01.md   章の計画と章末点検の記録
+  chapters/CH-01-STORY.md  章のあらすじ（本文より先に通しで決める。templates/work/chapters/STORY.md の形）
   episodes/EP001/
     V1.md V2.md …     版の本文だけを直下に置く（上書きしない）
     notes/
@@ -37,7 +38,8 @@
 
 ## 2. 1話の手順（skills/write-episode.md → オーナー確認 → skills/finalize-episode.md）
 
-1. **メモ（ブロック単位）**：ブロックの全話のメモを先に作る。`check_memo.py` で監査し、作者が決める分かれ目を二択にしてオーナーに決めてもらう。現場の細部は先に調べるか、書かないと決める。
+1. **あらすじ（章・ブロック単位）**：全話の展開を通しで読める文章で書く（chapters/ の STORY 形式。1話400〜600字）。`check_memo.py` で監査し、オーナーが通しで読んでまとめて直す。展開・二択・採用済みの話への影響はここで確定させる。
+1b. **分解**：確定したあらすじを各話のメモに分ける。筋を変えたくなったらあらすじに戻る。
 2. **温度の確認**：見せ場の一場面だけ書いてオーナーに見せる。
 3. **全文**：`episodes/EPxxx/Vn.md` に新しい版として保存し、`sync_current.py`。
 4. **点検**：`check_episode.py`（ERROR は直す）→ `check_all.py`（対応表。必須と参考）→ 必須の対応を全部埋める（`--status` が 0）。参考は書き手が選ぶ。直した版は `check_episode.py --base` で字数の増えすぎを見る。
