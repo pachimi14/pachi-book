@@ -61,6 +61,8 @@ def fixed_numbers(root):
     return set()
 
 
+# 読者の反応の数字（再生数・視聴者数・登録者数など）は拾わない。避けるのは能力・場の仕組み・段取りの数字（2026-10-01 kyuketsu オーナー）
+REACTION = re.compile(r"再生|視聴者|同接|登録者|フォロワー|トレンド|閲覧|高評価|いいね|PV")
 NUM = re.compile(r"[一二三四五六七八九十百千万0-9０-９]+(秒|回|人目|人|年|枚|分|時間|メートル|キロ|か月|ヶ月|日|番|往復|本|倍)")
 
 
@@ -81,7 +83,7 @@ def prose_checks(lines, root):
                 run = []
     fixed = fixed_numbers(root)
     for i, l in enumerate(lines, 1):
-        if l.startswith(("第", "【", "〈")):
+        if l.startswith(("第", "【", "〈")) or REACTION.search(l):
             continue
         for m in NUM.finditer(l):
             t = m.group(0)
