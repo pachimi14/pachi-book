@@ -124,7 +124,7 @@ def main():
     ap.add_argument("--new")
     ap.add_argument("--apply", nargs="+", help="入れる案の番号（P…）。直し所が重ならなければ複数可")
     ap.add_argument("--by-writer", action="store_true", help="書き手が好みの判定で選んで入れる（オーナーの選択として記録しない。初稿の見せ場の案選び）")
-    ap.add_argument("--strong", action="store_true", help="オーナーがはっきり選んだ（「これがいい」）。材料の格を明示にする")
+    ap.add_argument("--strong", action="store_true", help="オーナーがよさを言って選んだ（「これがいい」「これ好き」）。材料の格を明示にする。「これでいい」は妥協のことが多いので付けない")
     ap.add_argument("--to", help="--apply で作る新しい版（例 V8）")
     ap.add_argument("--owner-wrote", help="オーナーが自分で書いた文のファイル（案は全部選ばれなかったとして記録）")
     ap.add_argument("--batch", help="--owner-wrote のとき、比べた案の組（P<日時>）")
