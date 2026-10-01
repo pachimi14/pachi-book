@@ -54,7 +54,7 @@ python ../pachi-book/scripts/propose.py EPxxx Vn --issue "オーナーの指摘�
 ```
 python ../pachi-book/scripts/propose.py EPxxx Vn --apply P…-A --to V(n+1)
 ```
-- `--apply` は、選ばれた案と選ばれなかった案を好みの材料（`<taste_dir>/choices.jsonl`）に記録する。
+- `--apply` は、選ばれた案と選ばれなかった案を好みの材料（`<taste_dir>/choices.jsonl`）に記録する。ふだんは「まあこっちか」の弱い好み（格：選択）として記録し、オーナーがはっきり選んだ（「これがいい」）ときは `--strong`（格：明示）。オーナーが自分で書いた文は `--owner-wrote`（明示）。材料の格は taste.py の説明を参照（2026-10-01 オーナー：二択でなんとなく選んだものと、文を指定したものが同じ扱いになっていた）。
 - オーナーが案を選ばず自分で書いてきたときは、その文を入れたうえで `propose.py EPxxx Vn --owner-wrote 書いた文.txt --batch P<日時>` を回し、オーナーの文を選んだ側として記録する（一番よい材料）。
 - 一つの版に複数の直しを入れるときは、入れた版を次の基準にして、次の案を点検し直す（前の直しで前後が変わっているため）。
 - 入れたら `check_episode.py V(n+1) --base Vn` の字数を見る。

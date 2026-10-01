@@ -98,9 +98,9 @@ def cand_text(pairs):
     return "\n／\n".join(new or "（削除）" for _, new in pairs)
 
 
-def record_choice(ep, chosen_id, chosen_text, sibs, db):
-    """オーナーの選択を、好みの判定役の材料に足す。"""
-    rec = {"date": str(datetime.date.today()), "ep": ep, "issue": next(iter(sibs.values()))["issue"],
+def record_choice(ep, chosen_id, chosen_text, sibs, db, weak=True):
+    """オーナーの選択を、好みの判定役の材料に足す。weak＝「まあこっちか」で選んだ（格は選択）。強く選んだときは明示。"""
+    rec = {"date": str(datetime.date.today()), "ep": ep, "issue": next(iter(sibs.values()))["issue"], "weak": weak,
            "context": next(iter(sibs.values())).get("context", ""),
            "chosen_id": chosen_id or "owner", "chosen_text": chosen_text,
            "rejected": [{"id": k, "text": cand_text(v["pairs"])} for k, v in sibs.items()]}
@@ -122,7 +122,9 @@ def main():
     ap.add_argument("--cand", action="append", default=[], help="案のファイル（@@old/@@new）。複数可")
     ap.add_argument("--old")
     ap.add_argument("--new")
-    ap.add_argument("--apply", help="入れる案の番号（P…）")
+    ap.add_argument("--apply", nargs="+", help="入れる案の番号（P…）。直し所が重ならなければ複数可")
+    ap.add_argument("--by-writer", action="store_true", help="書き手が好みの判定で選んで入れる（オーナーの選択として記録しない。初稿の見せ場の案選び）")
+    ap.add_argument("--strong", action="store_true", help="オーナーがはっきり選んだ（「これがいい」）。材料の格を明示にする")
     ap.add_argument("--to", help="--apply で作る新しい版（例 V8）")
     ap.add_argument("--owner-wrote", help="オーナーが自分で書いた文のファイル（案は全部選ばれなかったとして記録）")
     ap.add_argument("--batch", help="--owner-wrote のとき、比べた案の組（P<日時>）")
@@ -136,31 +138,36 @@ def main():
         sibs = {k: v for k, v in db.items() if a.batch and k.startswith(a.batch + "-")}
         if not sibs:
             sys.exit("--batch の案が記録にない")
-        record_choice(ep, None, Path(a.owner_wrote).read_text(encoding="utf-8").strip(), sibs, db)
+        record_choice(ep, None, Path(a.owner_wrote).read_text(encoding="utf-8").strip(), sibs, db, weak=False)
         print(f"オーナーの文を選んだ側として記録した（選ばれなかった案 {len(sibs)}）")
         return
 
     if a.apply:
-        if a.apply not in db or not a.to:
+        if not a.to or any(k not in db for k in a.apply):
             sys.exit("番号が記録にないか、--to がない")
-        rec = db[a.apply]
-        if rec["version"] != ver:
-            sys.exit(f"この案は {rec['version']} に対して点検した。{ver} には入れない（点検し直す）")
+        recs = [db[k] for k in a.apply]
+        if any(r["version"] != ver for r in recs):
+            sys.exit(f"{ver} に対して点検した案だけを入れられる（点検し直す）")
         src = A.WORK / "episodes" / ep / f"{ver}.md"
         dst = A.WORK / "episodes" / ep / f"{a.to}.md"
         if dst.exists():
             sys.exit(f"{dst.relative_to(A.WORK)} はもうある")
-        dst.write_text(patch(src.read_text(encoding="utf-8"), [tuple(p) for p in rec["pairs"]]), encoding="utf-8", newline="\n")
+        text = src.read_text(encoding="utf-8")
+        for r in recs:
+            text = patch(text, [tuple(p) for p in r["pairs"]])
+        dst.write_text(text, encoding="utf-8", newline="\n")
         subprocess.run([sys.executable, str(Path(__file__).resolve().parent / "sync_current.py")], cwd=A.WORK,
                        capture_output=True)
         w, size = warns(dst, src)
-        stamp_key = a.apply.rsplit("-", 1)[0]
-        sibs = {k: v for k, v in db.items() if k.startswith(stamp_key + "-") and k != a.apply}
-        if sibs:
-            record_choice(ep, a.apply, cand_text(rec["pairs"]), sibs, db)
-        print(f"{dst.relative_to(A.WORK)} に {a.apply} を入れた（筋の点検：{rec['verdict']}）")
-        if rec["verdict"] != "通る":
-            print(f"注意：この案は筋の点検で「{rec['verdict']}」だった。オーナーに見せたときの理由どおりかを確かめる（proposals.md）")
+        for key, rec in zip(a.apply, recs):
+            stamp_key = key.rsplit("-", 1)[0]
+            sibs = {k: v for k, v in db.items() if k.startswith(stamp_key + "-") and k != key}
+            if sibs and not a.by_writer:
+                record_choice(ep, key, cand_text(rec["pairs"]), sibs, db, weak=not a.strong)
+            who = "書き手が好みの判定で" if a.by_writer else "オーナーの選択で"
+            print(f"{dst.relative_to(A.WORK)} に {key} を入れた（{who}。筋の点検：{rec['verdict']}" + (f"／好み：{rec['taste']:g}勝" if rec.get("taste") is not None else "") + "）")
+            if rec["verdict"] != "通る":
+                print(f"  注意：筋の点検で「{rec['verdict']}」だった案。理由を proposals.md で確かめる")
         print("\n".join(size + w[:10]))
         return
 

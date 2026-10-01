@@ -47,6 +47,18 @@ def git(*a):
 
 # ---- 材料を集める ----
 
+def tier_of(subj):
+    """材料の格（2026-10-01 オーナー：「まあこっちか」で選んだものと、「この文にして」と書いたものが同じ扱いになっていた）。
+    明示：オーナーが書いた・文を指定した／指示：オーナーの指摘を受けて書き手が書いた／選択：書き手の案から選んだ／混在：レビューなどとまとめた直し（材料から外す）"""
+    if re.search(r"初見読者レビューとオーナー|執筆工程の改善|ほか）|、採用を保留", subj):
+        return "混在"
+    if re.search(r"owner:A|（案。未採用）", subj):
+        return "選択"
+    if re.search(r"オーナーの文面|オーナーの形|オーナー修正|オーナーの細部修正|owner:[CD]", subj):
+        return "明示"
+    return "指示"
+
+
 def from_git():
     out = []
     for line in git("log", "--format=%H%x09%an%x09%s").splitlines():
@@ -78,7 +90,7 @@ def from_git():
                     continue  # 読点・空白だけの直しは除く
                 ctx = "\n".join(x for x in a[max(0, i1 - 12):i1] if x.strip())   # 前後を広めに（2026-10-01：前3行では筋の直しを外した）
                 after = "\n".join(x for x in a[i2:i2 + 5] if x.strip())
-                out.append({"src": "git", "id": f"{h[:7]}:{path}:{i1}", "ep": path.split("/")[1], "subject": subj[:80],
+                out.append({"src": "git", "tier": tier_of(subj), "id": f"{h[:7]}:{path}:{i1}", "ep": path.split("/")[1], "subject": subj[:80],
                             "context": ctx, "after": after, "worse": old, "better": new, "reason": ""})
     return out
 
@@ -89,7 +101,7 @@ def from_bad():
         if line.startswith("## "):
             title, pend = line[3:].strip(), None
         elif line.startswith("- 元："):
-            pend = {"src": "bad", "id": f"bad:{title}:{len(out)}", "ep": "", "context": "", "title": title,
+            pend = {"src": "bad", "tier": "明示", "id": f"bad:{title}:{len(out)}", "ep": "", "context": "", "title": title,
                     "worse": line[4:].strip(), "better": None, "reason": ""}
         elif line.startswith("- 直：") and pend:
             pend["better"] = "" if line[4:].strip().startswith("削除") else line[4:].strip()
@@ -109,7 +121,8 @@ def from_choices():
         for line in p.read_text(encoding="utf-8").splitlines():
             c = json.loads(line)
             for r in c["rejected"]:
-                out.append({"src": "choice", "id": f"{c['chosen_id']}>{r['id']}", "ep": c["ep"], "context": c.get("context", ""),
+                out.append({"src": "choice", "tier": "明示" if c["chosen_id"] == "owner" else ("選択" if c.get("weak", True) else "明示"),
+                            "id": f"{c['chosen_id']}>{r['id']}", "ep": c["ep"], "context": c.get("context", ""),
                             "worse": r["text"], "better": c["chosen_text"], "reason": c.get("issue", "")})
     return out
 
@@ -127,9 +140,10 @@ def build():
     return uniq
 
 
-def pairs():
+def pairs(all_=False):
     p = tdir() / "pairs.jsonl"
-    return [json.loads(l) for l in p.read_text(encoding="utf-8").splitlines()] if p.is_file() else build()
+    P = [json.loads(l) for l in p.read_text(encoding="utf-8").splitlines()] if p.is_file() else build()
+    return P if all_ else [x for x in P if x.get("tier") != "混在"]
 
 
 # ---- 判定 ----
@@ -145,8 +159,11 @@ ASK = """あなたは、この連載のオーナー（作者）の好みを当�
 """
 
 
+TIER_NOTE = {"明示": "オーナーが書いた", "指示": "オーナーの指摘で書き手が書いた", "選択": "書き手の案からオーナーが選んだ（弱い好み）"}
+
+
 def examples_text(ex):
-    return "\n".join(f"- 選ばなかった：{p['worse'] or '（削った）'}\n  選んだ：{p['better'] or '（削った）'}"
+    return "\n".join(f"- 〔{TIER_NOTE.get(p.get('tier'), '')}〕選ばなかった：{p['worse'] or '（削った）'}\n  選んだ：{p['better'] or '（削った）'}"
                      + (f"\n  理由：{p['reason']}" if p["reason"] else "") for p in ex)
 
 
@@ -229,17 +246,16 @@ def overlap(a, b):
 
 
 def evaluate(n, seed, strict, batch=10):
-    P = pairs()
+    P = pairs(all_=True)
     rnd = random.Random(seed)
-    pool = [p for p in P if p["src"] in ("git", "choice")]
+    pool = [p for p in P if p.get("tier") == "明示"]   # 測るのは「オーナーが書いた」組だけ
     hold = rnd.sample(pool, min(n, len(pool)))
     hc = {h["id"].split(":")[0] for h in hold}
     ex = [p for p in P if p not in hold and not (strict and p["id"].split(":")[0] in hc)
           and not any(overlap(p["worse"] + p["better"], h["worse"]) or overlap(p["worse"] + p["better"], h["better"]) for h in hold)]
-    prof = make_profile(ex)  # 伏せた組を除いた例だけから書き出す（答えの持ち込みを防ぐ）
-    (tdir() / f"profile-eval-s{seed}.md").write_text(prof, encoding="utf-8")
+    ex_t = [p for p in ex if p.get("tier") != "混在"]
     jobs, keys = [], {}
-    for cond in ("base", "taste", "profile"):
+    for cond in ("base", "taste", "tiered"):
         for b in range(0, len(hold), batch):
             chunk = hold[b:b + batch]
             for flip in (False, True):
@@ -250,11 +266,11 @@ def evaluate(n, seed, strict, batch=10):
                     items.append((p["context"], p["better"], p["worse"], af) if first_better else (p["context"], p["worse"], p["better"], af))
                     key.append("X" if first_better else "Y")
                 ctx = (A.section("良い例", A.doc("good_examples")) if cond == "base"
-                       else context_block(ex, "") if cond == "taste" else context_block(ex, prof))
+                       else context_block([dict(p, tier=None) for p in ex], "") if cond == "taste" else context_block(ex_t, ""))
                 prompt = ASK + A.SEP + ctx + A.SEP + "# 問題\n\n" + items_text(items)
                 jobs.append((A.agents()[0], prompt, (cond, b, flip)))
                 keys[(cond, b, flip)] = (key, [p["id"] for p in chunk])
-    res, both = {"base": [0, 0], "taste": [0, 0], "profile": [0, 0]}, {}
+    res, both = {"base": [0, 0], "taste": [0, 0], "tiered": [0, 0]}, {}
     rows = []
     for tag, text, err in A.run_many(jobs):
         got = dict(re.findall(r"問(\d+)\s*[:：]\s*([XY])", text or ""))
@@ -271,15 +287,15 @@ def evaluate(n, seed, strict, batch=10):
     consistent = {c: sum(1 for (cc, _), v in both.items() if cc == c and (all(v) or not any(v))) for c in res}
     day = f"{datetime.date.today()}-s{seed}" + ("-strict" if strict else "")
     lines = [f"# 好みの判定役の測定（{day}）", "",
-             f"伏せた組 {len(hold)}（git の履歴・選択の記録から）、渡した例 {len(ex)}（伏せた組と重なる例{'・同じコミットの例' if strict else ''}は外した）、順番2通り。", "",
+             f"伏せた組 {len(hold)}（オーナーが書いた組＝明示から）、渡した例 {len(ex)}（伏せた組と重なる例{'・同じコミットの例' if strict else ''}は外した）、順番2通り。", "",
              "| 条件 | 当たり（判定の数） | 両方の順で当てた組 | 両方の順で答えがそろった組だけの当たり（そろわない組は「判定できず」） |", "|---|---|---|---|"]
     for c, (ok, m) in res.items():
         cs = consistent[c]
-        lines.append(f"| {c}（{ {'base': '良い例だけ', 'taste': '良い例＋オーナーが選んだ例', 'profile': '＋例から書き出した好みの傾向'}[c] }） | {ok}/{m}（{ok / max(m, 1):.0%}） | {stable[c]}/{len(hold)} | {stable[c]}/{cs}（{stable[c] / max(cs, 1):.0%}）・答えた組 {cs}/{len(hold)} |")
+        lines.append(f"| {c}（{ {'base': '良い例だけ', 'taste': '良い例＋例（格なし・混在も含む）', 'tiered': '良い例＋例（格つき・混在を外す）'}[c] }） | {ok}/{m}（{ok / max(m, 1):.0%}） | {stable[c]}/{len(hold)} | {stable[c]}/{cs}（{stable[c] / max(cs, 1):.0%}）・答えた組 {cs}/{len(hold)} |")
     hmap = {h["id"]: h for h in hold}
     miss = {}
     for r in rows:
-        if r["cond"] == "profile" and not r["ok"]:
+        if r["cond"] == "tiered" and not r["ok"]:
             miss[r["id"]] = miss.get(r["id"], 0) + 1
     (tdir() / f"eval-{day}-miss.json").write_text(json.dumps([dict(hmap[k], miss=v) for k, v in miss.items()], ensure_ascii=False, indent=1), encoding="utf-8")
     out = tdir() / f"eval-{day}.md"
@@ -289,7 +305,11 @@ def evaluate(n, seed, strict, batch=10):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=("build", "eval", "profile"))
+    ap.add_argument("cmd", choices=("build", "eval", "profile", "compare", "record"))
+    ap.add_argument("files", nargs="*", help="compare：比べる版のファイル（2〜4）／record：選ばれた版、選ばれなかった版…の順")
+    ap.add_argument("--issue", default="", help="record：何を選んだか（例 EP023 温度の一場面）")
+    ap.add_argument("--ep", default="", help="record：話")
+    ap.add_argument("--strong", action="store_true", help="record：オーナーがはっきり選んだ")
     ap.add_argument("--n", type=int, default=40)
     ap.add_argument("--seed", type=int, default=7)
     ap.add_argument("--strict", action="store_true")
@@ -298,6 +318,27 @@ def main():
         from collections import Counter
         P = build()
         print(len(P), dict(Counter(p["src"] for p in P)))
+    elif a.cmd == "compare":
+        # 温度確認の一場面など、角度の違う版を比べる（2026-10-01）。参考。オーナーに見せるときに添える
+        if not 2 <= len(a.files) <= 4:
+            sys.exit("比べる版は2〜4個")
+        cands = {Path(f).stem: Path(f).read_text(encoding="utf-8").strip() for f in a.files}
+        wins, stable, err = judge("", cands)
+        print("好みの判定（参考。taste.py。総当たりを両方の順で聞いた勝ち数。当たりは測定で75%前後）")
+        for k, v in sorted(wins.items(), key=lambda x: -x[1]):
+            print(f"  {k}：{v:g}勝")
+        print(f"  両方の順で答えがそろった組：{stable:.0%}" + (f"　失敗：{err}" if err else ""))
+    elif a.cmd == "record":
+        # オーナーが版を選んだ記録（温度の一場面など、propose.py を通さない選択）
+        if len(a.files) < 2:
+            sys.exit("選ばれた版、選ばれなかった版…の順に2つ以上")
+        texts = [Path(f).read_text(encoding="utf-8").strip() for f in a.files]
+        rec = {"date": str(datetime.date.today()), "ep": a.ep, "issue": a.issue, "weak": not a.strong, "context": "",
+               "chosen_id": Path(a.files[0]).stem, "chosen_text": texts[0],
+               "rejected": [{"id": Path(f).stem, "text": x} for f, x in zip(a.files[1:], texts[1:])]}
+        with (tdir() / "choices.jsonl").open("a", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+        print(len(build()), "組（記録した）")
     elif a.cmd == "profile":
         out = tdir() / "profile.md"
         out.write_text(f"# オーナーの好みの傾向（taste.py profile。{datetime.date.today()}。記録 {len(pairs())} 組から）\n\n" + make_profile(), encoding="utf-8")
