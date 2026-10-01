@@ -67,6 +67,10 @@ def main():
     if not market:
         print("警告：pachi.json の market に市場の調べがない。作品の資料だけで提案する。")
     goal = cfg.get("goal", "")
+    sch = cfg.get("schedule")
+    if sch:
+        goal += (f"\n公開の予定：{sch.get('start')} 公開開始、初日 {sch.get('first_day')} 話、以降毎日 {sch.get('per_day')} 話（{sch.get('note', '')}）。"
+                 "目標の期間に、どの話まで公開されるかを計算して、どの章が目標に効くかを書く")
     prompt = A.SEP.join([PROMPT + f"\n対象：{a.target}\n作品の目標：{goal or 'なし'}（目標があるときは、各案がその目標にどう効くか、市場の条件のどれを満たすかを書く）\n作者からの前提：{a.note or 'なし'}",
                          A.section("作品の核", A.read("concept.md")), A.section("章の並び", A.read("arc.md")),
                          A.section("作者の好み", A.read("preferences.md")), A.section("長期の骨格（作者用）", A.doc("long_arcs")),

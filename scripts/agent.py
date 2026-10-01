@@ -46,7 +46,8 @@ DEFAULTS = {
     "line_aim": None,                          # 主人公の「らしい一言」の照準の問い（例 blocks/FAN-LINE-AIM.md）
     "fixed_numbers": [],
     "market": [],                              # 市場の調べ（ストーリーテラーが読む）
-    "goal": "",                                # 作品の目標（例：公開から1か月で★1000）                       # 台帳で決まっている数字（数字の検出から除く。例 "十年"）
+    "goal": "",                                # 作品の目標（例：公開から1か月で★1000）
+    "schedule": None,                          # 公開の予定 {"start": "YYYY-MM-DD", "first_day": 8, "per_day": 2}                       # 台帳で決まっている数字（数字の検出から除く。例 "十年"）
 }
 
 
