@@ -66,7 +66,8 @@ def main():
     market = A.SEP.join(f"# 市場の調べ（{m}）\n\n{A.read(m)}" for m in cfg.get("market", []) if A.read(m))
     if not market:
         print("警告：pachi.json の market に市場の調べがない。作品の資料だけで提案する。")
-    prompt = A.SEP.join([PROMPT + f"\n対象：{a.target}\n作者からの前提：{a.note or 'なし'}",
+    goal = cfg.get("goal", "")
+    prompt = A.SEP.join([PROMPT + f"\n対象：{a.target}\n作品の目標：{goal or 'なし'}（目標があるときは、各案がその目標にどう効くか、市場の条件のどれを満たすかを書く）\n作者からの前提：{a.note or 'なし'}",
                          A.section("作品の核", A.read("concept.md")), A.section("章の並び", A.read("arc.md")),
                          A.section("作者の好み", A.read("preferences.md")), A.section("長期の骨格（作者用）", A.doc("long_arcs")),
                          A.section("これまでのあらすじ", A.doc("synopsis")), plan_text, market]) + "\n"

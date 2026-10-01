@@ -44,7 +44,9 @@ DEFAULTS = {
     "bad_examples": "blocks/BAD-EXAMPLES.md",  # オーナーが直した文の組
     "good_examples": "blocks/GOOD-EXAMPLES.md",
     "line_aim": None,                          # 主人公の「らしい一言」の照準の問い（例 blocks/FAN-LINE-AIM.md）
-    "fixed_numbers": [],                       # 台帳で決まっている数字（数字の検出から除く。例 "十年"）
+    "fixed_numbers": [],
+    "market": [],                              # 市場の調べ（ストーリーテラーが読む）
+    "goal": "",                                # 作品の目標（例：公開から1か月で★1000）                       # 台帳で決まっている数字（数字の検出から除く。例 "十年"）
 }
 
 
