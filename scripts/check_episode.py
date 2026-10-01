@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Mechanical checks for one Kakuyomu episode file. Short output only."""
 import argparse
+import importlib.util
+import json
 import re
 import sys
 from pathlib import Path
@@ -43,6 +45,74 @@ def title_line_allowed(episode_file):
         if style.is_file():
             return bool(re.search(r"本文の1行目にタイトル[：:]\s*あり", style.read_text(encoding="utf-8")))
     return False
+
+
+def work_root(episode_file):
+    for parent in list(episode_file.resolve().parents)[:4]:
+        if (parent / "style.md").is_file() or (parent / "pachi.json").is_file():
+            return parent
+    return Path.cwd()
+
+
+def fixed_numbers(root):
+    p = root / "pachi.json"
+    if p.is_file():
+        return set(json.loads(p.read_text(encoding="utf-8")).get("fixed_numbers", []))
+    return set()
+
+
+NUM = re.compile(r"[一二三四五六七八九十百千万0-9０-９]+(秒|回|人目|人|年|枚|分|時間|メートル|キロ|か月|ヶ月|日|番|往復|本|倍)")
+
+
+def prose_checks(lines, root):
+    """機械で拾える文の癖（2026-09-30〜10-01 オーナーの指摘から。旧 voice_check の汎用部分）。"""
+    warns = []
+    run = []
+    for i, l in enumerate(lines, 1):
+        if not l.startswith("　"):
+            run = []
+            continue
+        for sent in re.findall(r"[^。]+。", l.strip()):
+            if sent.count("、") == 1 and len(sent) <= 22:
+                run.append(i)
+                if len(run) == 3:
+                    warns.append(f"{run[0]}〜{i}行目：同じ刻みの読点が3文続く（読点のない文を混ぜる）")
+            else:
+                run = []
+    fixed = fixed_numbers(root)
+    for i, l in enumerate(lines, 1):
+        if l.startswith(("第", "【", "〈")):
+            continue
+        for m in NUM.finditer(l):
+            t = m.group(0)
+            if t in ("一回", "一人", "一本", "一日") or t in fixed:
+                continue
+            warns.append(f"{i}行目：具体的な数字「{t}」（新しく足した数字なら、数えない言い方にする。台帳で決まった数字は pachi.json の fixed_numbers へ）")
+    for i, l in enumerate(lines, 1):
+        sents = re.findall(r"[^。」]+[。」]?", l.strip("「」『』　"))
+        ends = [re.sub(r"[。」]", "", x)[-3:] for x in sents if len(x) > 3]
+        if len([e for e in ends if re.search(r"(ました|でした)$", e)]) >= 2 and len(ends) <= 4:
+            warns.append(f"{i}行目：語尾の重なり（ました・でした）")
+    head = [i for i, l in enumerate(lines, 1) if re.match(r"^[「『]……", l)]
+    if len(head) > 7:
+        warns.append(f"「……」で始まる台詞が{len(head)}（基準話は1話3〜7）")
+    dash = [i for i, l in enumerate(lines, 1) if l.startswith("　") and "――" in l]
+    if len(dash) > 1:
+        warns.append(f"地の文の「――」が{len(dash)}（行 {dash}）")
+    return warns
+
+
+def plugin_checks(root, path, lines):
+    """作品ごとの癖の点検：作品ルートの tools/work_checks.py に checks(path, lines) があれば呼ぶ。"""
+    plug = root / "tools" / "work_checks.py"
+    if not plug.is_file():
+        return [], ""
+    spec = importlib.util.spec_from_file_location("work_checks", plug)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    warns = list(mod.checks(path, lines))
+    summary = mod.summary(path, lines) if hasattr(mod, "summary") else ""
+    return warns, summary
 
 
 def main():
@@ -181,8 +251,13 @@ def main():
         if subj >= 20:
             warns.append(f"「主語が、」型の読点で始まる行が{subj}行（短い区切りの読点を外す）")
 
+    root = work_root(a.file)
+    warns += prose_checks(lines, root)
+    extra, summary = plugin_checks(root, a.file, lines)
+    warns += extra
+
     levels = {k: gaps.count(k) for k in sorted(set(gaps))}
-    print(f"{a.file}  字数 {chars}  空行の段階 {levels}{rhythm}")
+    print(f"{a.file}  字数 {chars}  空行の段階 {levels}{rhythm}{summary}")
     for e in errors:
         print("ERROR", e)
     for w in warns:

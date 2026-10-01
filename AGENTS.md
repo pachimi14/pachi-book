@@ -17,22 +17,43 @@
 
 - `docs/PROTOCOL.md`：制作手順（1話・ブロック・章、台帳の規則）
 - `skills/write-episode.md`、`skills/finalize-episode.md`、`skills/chapter-review.md`：作業ごとの手順
-- `skills/review-episode.md`：独立レビューの基準（`scripts/review.py` が読む）
-- `skills/japanese-prose.md`：AIの日本語が滑りやすい箇所の点検。対句否定（「Aではない。Bだ」）は地の文で禁止。毎話必ず読む
-- `skills/layout.md`：行・空行・場面転換（既定は◇）・表記・括弧の役割の既定値。毎話必ず読む
+- `skills/japanese-prose.md`：AIの日本語が滑りやすい箇所。対句否定（「Aではない。Bだ」）は地の文で禁止。書いたあとの点検で使う
+- `skills/layout.md`：行・空行・場面転換（既定は◇）・表記・括弧の役割の既定値。書く前に読む
 - `skills/lenses/`：場面別の点検（action／streaming／board／everyday）。該当する話だけ読む
-- `scripts/`：機械チェック（作品リポジトリのルートで `python ../pachi-book/scripts/...` として実行）
-- `templates/work/`：新しい作品リポジトリのひな形
+- `scripts/`：機械チェックと LLM の点検（作品リポジトリのルートで `python ../pachi-book/scripts/...` として実行）
+- `templates/work/`：新しい作品リポジトリのひな形（`blocks/BLOCK-MEMOS.md` がブロックのメモの形）
 
 ## コマンド（作品リポジトリのルートで実行）
 
 ```bash
-python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md
-python ../pachi-book/scripts/review.py EP001 V1   # 独立レビュー。--agent claude|codex、既定は使える方
-python ../pachi-book/scripts/threads.py .
+# 本文
+python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md   # 機械の点検（作品の tools/work_checks.py も読む）
+python ../pachi-book/scripts/check_all.py EP001 V1                   # 機械・筋・声の点検をまとめた対応表 notes/check-V1.md
+python ../pachi-book/scripts/check_all.py EP001 V1 --status          # 対応が空の行（0 になるまで埋める）
+python ../pachi-book/scripts/check_reader.py EP001 V1                # 初見読者レビュー（採用前の最後に一回）
+python ../pachi-book/scripts/check_logic.py EP001 V1 --old "元の文" --new "案"   # 直し案の点検
+# メモ
+python ../pachi-book/scripts/check_memo.py blocks/CH-01-A-memos.md   # 書く前の監査（二択・現場の洗い出しを含む）
+python ../pachi-book/scripts/check_memo.py <採用した話のメモ> <あとのメモ> --after EP001   # 採用後の波及の監査
+# 記録・測定
 python ../pachi-book/scripts/sync_current.py      # 各話の最新版を episodes/current/ へ
+python ../pachi-book/scripts/threads.py .         # 未回収の伏線
+python ../pachi-book/scripts/interventions.py     # オーナーの介入の件数（話ごと・分類ごと）
+python ../pachi-book/scripts/backtest.py          # 点検ツールの回帰テスト（作品の research/tool-backtest/truth.json）
 ```
 
-## レビュー用 CLI
+`check_voice.py`（声の点検）は `check_all.py` から呼ばれる。単独でも回せる。
 
-`review.py` は `claude -p` または `codex exec` を空の一時フォルダで実行する。CLI が PATH にない場合は環境変数 `PACHI_CLAUDE` / `PACHI_CODEX` にパスを設定する。既定の選択は `PACHI_REVIEW_AGENT`（auto／claude／codex）。
+## LLM の点検
+
+点検は `claude -p` または `codex exec` を空の一時フォルダで実行する（リポジトリは読ませず、資料はプロンプトで渡す）。共通部は `scripts/agent.py`。
+- モデルは固定する（点検のぶれにモデルの違いを混ぜない）：既定 `claude-opus-5-5`、effort `high`。変えるときは `PACHI_MODEL` / `PACHI_EFFORT` か各スクリプトの `--model` / `--effort`。
+- エージェントの選択：`PACHI_AGENT`（auto／claude／codex）。auto はクラウドでは claude だけ、ローカルでは claude と codex。
+- CLI が PATH にない場合は `PACHI_CLAUDE` / `PACHI_CODEX` にパスを設定する。打ち切りは `PACHI_TIMEOUT`（既定 900 秒）。
+- 作品の資料の場所（あらすじ・台帳・口調カード・オーナーの目・ダメな例・良い例）は、作品ルートの `pachi.json` で上書きできる（既定は `scripts/agent.py` の DEFAULTS）。
+- 点検は直す方向だけを言い、直した文は出さない（ツールの直し案がそのまま本文に入り、オーナーに消される一行を生んでいたため。2026-10-01）。
+
+## 改善の測り方
+
+オーナーの指摘で直したコミットには `(owner:A)`〜`(owner:F)` を付け、`interventions.py` で話ごとに数える。作者の判断（A）以外の件数が減っていれば、仕組みが効いている。
+点検ツールを直したら `backtest.py` を回し、オーナーの過去の介入を先に拾える件数が減っていないかを見る。

@@ -16,28 +16,34 @@
   foreshadow.md       伏線の台帳
   changes.md          設定変更・Retcon・伏線破棄の記録と影響範囲
   blocks/BLOCK-01.md  4話単位の計画とブロック要約
+  blocks/*-memos.md   ブロックの全話のメモ（templates/work/blocks/BLOCK-MEMOS.md の形）
+  blocks/SYNOPSIS.md  採用話のあらすじ（「- 第N話」の行。点検が前の話までのあらすじとして使う）
+  blocks/GOOD-EXAMPLES.md  良い例（書く前に読む）
+  blocks/BAD-EXAMPLES.md   オーナーが直した文の組（書いたあとの点検で使う）
+  blocks/OWNER-EYE.md      オーナーの目（書いたあとの点検で使う）
+  blocks/VOICE-CARDS.md    人物ごとの口調
+  pachi.json          点検が読む資料の場所・台帳で決まった数字（任意）
+  tools/work_checks.py  作品だけの機械点検（任意。check_episode.py が読む）
+  research/           調べたこと。tool-backtest/truth.json は点検ツールの回帰テストの正解
   chapters/CH-01.md   章の計画と章末点検の記録
   episodes/EP001/
     V1.md V2.md …     版の本文だけを直下に置く（上書きしない）
     notes/
-      memo.md         その話の「何が面白いか」、流れ、引き、タイトル
-      summary.md      採用版（「採用版：Vn」）の要約と終了時点の状態
-      review-Vn-<agent>.md  独立レビューの結果（review.py が生成）
+      summary.md      採用版（「採用版：Vn」）の要約と終了時点の状態、オーナーの介入の件数
+      check-Vn.md     点検の対応表（check_all.py が生成。「対応」は書き手が埋める）
+      logic-/voice-/reader-Vn-<agent>.md  各点検の元の出力
   episodes/current/EP001.md  各話の最新版（通し読み用。版を作るたびに sync_current.py で更新）
 ```
 
 ## 2. 1話の手順（skills/write-episode.md → オーナー確認 → skills/finalize-episode.md）
 
-方向が安定するまで（最初のブロック）は1話ごとにオーナーが確認する。安定後はブロック単位で確認してよい。
-
-1. **メモ**：`notes/memo.md` に、面白さの主役（1行）、流れ（5行前後）、引き（1行）、使う伏線ID、この話で新しく確定する事実を書く。ブロック計画に沿わせる。
-2. **読む**：concept、style、voices、preferences、`skills/japanese-prose.md`、該当する `skills/lenses/`、ブロック計画、同ブロック既出話の summary、直前話の本文、canon のうち登場人物・関係能力の項、`threads.py` が出す未回収伏線のうち関係するもの。
-3. **書く**：`episodes/EPxxx/Vn.md` に新しい版として保存し、`sync_current.py` で `episodes/current/` を更新する。
-4. **機械チェック**：`check_episode.py`。ERRORは直す。WARNは判断する。
-5. **矛盾チェック**（チェックリスト、3節）。欠陥だけを直し、文体の好みで直さない。
-6. **独立レビュー（自動）**：`review.py` が、書き手と別のエージェント実行で本文をレビューし、`notes/review-Vn-<agent>.md` に保存する。`[直すべき]` だけを直して新しい版にする。基準は `skills/review-episode.md`。
-7. **オーナー確認**：最初に「面白いか」、次に欠陥。
-8. **記録**（採用後）：`notes/summary.md` に「採用版：Vn」と要約を書き、canon・foreshadow・abilities を更新。設定を変えたら changes.md。
+1. **メモ（ブロック単位）**：ブロックの全話のメモを先に作る。`check_memo.py` で監査し、作者が決める分かれ目を二択にしてオーナーに決めてもらう。現場の細部は先に調べるか、書かないと決める。
+2. **温度の確認**：見せ場の一場面だけ書いてオーナーに見せる。
+3. **全文**：`episodes/EPxxx/Vn.md` に新しい版として保存し、`sync_current.py`。
+4. **点検**：`check_episode.py`（ERROR は直す）→ `check_all.py`（対応表）→ 対応を全部埋める（`--status` が 0）。
+5. **初見読者レビュー**：`check_reader.py` を採用前の最後に一回。【分からない】を直す。
+6. **オーナー確認**：最初に「面白いか」、次に欠陥。オーナーの指摘で直したコミットには `(owner:A〜F)` を付ける。
+7. **記録**（採用後）：`notes/summary.md`、canon・foreshadow・abilities・あらすじ、波及の監査（`check_memo.py --after`）。
 
 ## 3. 矛盾チェックリスト
 
@@ -88,6 +94,6 @@ concept・canon・既出の事実を変えるときは、changes.md に、日付
 後の話の都合で、採用済みの話を直すことがある。
 
 1. 新しい版 `V(n+1).md` を作る（採用版は上書きしない）。`sync_current.py` で current を更新する。
-2. 通常どおり、機械チェック、矛盾チェック、独立レビューを行う。
+2. 通常どおり、機械チェックと `check_all.py` の点検を行い、対応表を埋める。
 3. オーナーが採用したら、`notes/summary.md` の「採用版」と要約を更新する。
 4. 確定していた事実が変わる場合は、`changes.md` に記録し、canon・foreshadow と、その事実を使った後続話を確認する。

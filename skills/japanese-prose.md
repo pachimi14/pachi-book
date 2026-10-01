@@ -1,6 +1,6 @@
 # japanese-prose：AIの日本語が滑りやすい箇所の点検
 
-書き手は毎話これを読んでから書き、書いた後に点検する。独立レビューは「重大な欠陥」の判断にこれを使う。
+書いた後の点検で使う（2026-10-01：禁止・注意は書く前には読まない。作品のオーナーの指示で、「〜しない」がたまって面白さが落ちたため）。check_episode.py が機械で拾える型を出す。
 目的は、AIの文章に特有の型を消すこと。勢い・軽口・誇張・溜めを削るための規則ではない。
 
 出典：Lulu Book の kakuyomu-prose-writing（japanese-tech-writing、ai-tic-baselines、sentence-level、causal-pragmatic、evidence-dialogue、episode-preflight）から、小説に効く部分だけを抜き出した。
