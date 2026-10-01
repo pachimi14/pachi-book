@@ -88,6 +88,37 @@ def synopsis_before(n):
                      if (m := re.match(r"- 第(\d+)話", l)) and int(m.group(1)) < n)
 
 
+def _ep_sections(text, ep):
+    """見出し（## か ###）が EPxxx で始まる節を、同じ深さ以上の次の見出しまで抜き出す（「EP023〜031」のような範囲の見出しは除く）。"""
+    out, lines = [], text.splitlines()
+    for i, l in enumerate(lines):
+        m = re.match(rf"(#{{2,3}})\s+{ep}(?![〜~\-–\d])", l)
+        if not m:
+            continue
+        depth, body = len(m.group(1)), [l]
+        for nxt in lines[i + 1:]:
+            m2 = re.match(r"(#{1,3})\s", nxt)
+            if m2 and len(m2.group(1)) <= depth:
+                break
+            body.append(nxt)
+        out.append("\n".join(body).strip())
+    return out
+
+
+def episode_plan(ep):
+    """その話の作者の決定：章のあらすじ（chapters/CH-*-STORY.md）の節と、ブロックのメモ（blocks/*-memos.md）の節。
+
+    2026-10-02：筋の点検にこれを渡していなかったため、点検役が決めた筋を知らずに「直す」を出し、
+    直し案がそれに合わせて筋から外れていった（EP023）。メモは、確定したあらすじを場面に分けたもの。
+    """
+    parts = []
+    for pattern, title in (("chapters/CH-*-STORY.md", "章のあらすじ"), ("blocks/*-memos.md", "メモ")):
+        for p in sorted(WORK.glob(pattern)):
+            for s in _ep_sections(p.read_text(encoding="utf-8"), ep):
+                parts.append(f"## {title}（{p.relative_to(WORK).as_posix()}）\n\n{s}")
+    return "\n\n".join(parts)
+
+
 def section(title, body):
     return f"# {title}\n\n{body or '（なし）'}"
 
