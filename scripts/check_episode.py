@@ -87,7 +87,7 @@ def prose_checks(lines, root):
             continue
         for m in NUM.finditer(l):
             t = m.group(0)
-            if t in ("一回", "一人", "一本", "一日") or t in fixed:
+            if t in ("一回", "一人", "一本", "一日", "一番") or t in fixed:
                 continue
             warns.append(f"{i}行目：具体的な数字「{t}」（新しく足した数字なら、数えない言い方にする。台帳で決まった数字は pachi.json の fixed_numbers へ）")
     for i, l in enumerate(lines, 1):
