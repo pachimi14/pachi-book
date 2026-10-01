@@ -32,6 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import agent as A  # noqa: E402
 
 WORKERS = 8
+AGENT = "claude"   # --agent codex で切り替える（Codex はローカルだけ。作る係と判定する係を別のモデルにしてよい）
 
 
 def pdir():
@@ -110,7 +111,7 @@ def base_cmd(eps):
         n = int(f.stem[2:])
         prompt = (BASE.replace("{n}", str(n)) + A.SEP + A.section("これより前のあらすじ", A.synopsis_before(n))
                   + A.SEP + A.section(f"第{n}話の本文", f.read_text(encoding="utf-8")))
-        jobs.append(("claude", prompt, f.stem))
+        jobs.append((AGENT, prompt, f.stem))
     for tag, text, err in many(jobs, "medium"):
         if text:
             A.write(out / f"{tag}.md", text)
@@ -184,7 +185,7 @@ def make(n, seed, width):
         prompt = (BREAK.replace("{label}", label).replace("{how}", how).replace("{target}", target)
                   + A.SEP + A.section("これより前のあらすじ", A.synopsis_before(s))
                   + A.SEP + A.section("元の展開", join_eps(window)))
-        jobs.append(("claude", prompt, (s, k)))
+        jobs.append((AGENT, prompt, (s, k)))
     broken = []
     for (s, k), text, err in many(jobs):
         if not text:
@@ -202,7 +203,7 @@ def make(n, seed, width):
     jobs = []
     for i, b in enumerate(broken):
         for side in ("orig", "broken"):
-            jobs.append(("claude", NORM + A.SEP + b[f"{side}_raw"], (i, side)))
+            jobs.append((AGENT, NORM + A.SEP + b[f"{side}_raw"], (i, side)))
     for (i, side), text, err in many(jobs, "medium"):
         if text and set(split_eps(text)) == set(split_eps(broken[i]["orig_raw"])):
             broken[i][side] = text.strip()
@@ -256,7 +257,7 @@ def harvest_sources():
 
 
 def harvest():
-    jobs = [("claude", HARVEST + A.SEP + body, name) for name, body in harvest_sources()]
+    jobs = [(AGENT, HARVEST + A.SEP + body, name) for name, body in harvest_sources()]
     rows = []
     for name, text, err in many(jobs):
         for line in (text or "").splitlines():
@@ -295,7 +296,7 @@ def owner_norm():
         if r.get("ok") and not r.get("before_n"):
             sw = rnd.random() < 0.5
             a, b = (r["after"], r["before"]) if sw else (r["before"], r["after"])
-            jobs.append(("claude", OWNER_NORM + A.SEP + f"前提：{r['context']}\nP：{a}\nQ：{b}", (i, sw)))
+            jobs.append((AGENT, OWNER_NORM + A.SEP + f"前提：{r['context']}\nP：{a}\nQ：{b}", (i, sw)))
     for (i, sw), text, err in many(jobs, "medium"):
         m = re.search(r"P\s*[:：]\s*(.+?)\n+\s*Q\s*[:：]\s*(.+)", text or "", re.S)
         if m:
@@ -400,7 +401,7 @@ def evaluate(which, n, seed, batch, conds):
                     ex = [r for r in P if r not in chunk and not any(overlap(r["before"] + r["after"], c["before"] + c["after"]) for c in chunk)] if full else []
                     head = OWNER_ASK + A.SEP + work_context(full) + (A.SEP + A.section("オーナーが選んだ例（選ばなかった案 → 選んだ案）", owner_examples(ex)) if ex else "")
                 prompt = head + A.SEP + "# 問題\n\n" + "\n\n".join(items)
-                jobs.append(("claude", prompt, (cond, b, flip)))
+                jobs.append((AGENT, prompt, (cond, b, flip)))
                 keys[(cond, b, flip)] = (key, chunk)
     rows = []
     for tag, text, err in many(jobs):
@@ -489,7 +490,7 @@ def judge(path, runs):
     out_dir = p.parent / "notes"
     out_dir.mkdir(exist_ok=True)
     texts = {}
-    for tag, text, err in many([("claude", prompt, i) for i in range(1, runs + 1)]):
+    for tag, text, err in many([(AGENT, prompt, i) for i in range(1, runs + 1)]):
         if text:
             texts[tag] = text
             head = (f"# 展開の判定（plot_judge.py、{datetime.date.today()}、{tag}回目）\n\n"
@@ -542,9 +543,10 @@ def main():
     ap.add_argument("--cond", nargs="+", default=["plain", "full"])
     ap.add_argument("--runs", type=int, default=2, help="judge：回数（ぶれを見る）")
     ap.add_argument("--workers", type=int, default=8)
+    ap.add_argument("--agent", default="claude", choices=("claude", "codex"))
     a = ap.parse_args()
-    global WORKERS
-    WORKERS = a.workers
+    global WORKERS, AGENT
+    WORKERS, AGENT = a.workers, a.agent
     if a.cmd == "base":
         base_cmd(a.files)
     elif a.cmd == "make":
