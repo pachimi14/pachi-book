@@ -11,6 +11,7 @@
   python ../pachi-book/scripts/backtest.py --only EP020
   python ../pachi-book/scripts/backtest.py --grade-only        # 点検は回さず、前回の対応表を採点し直す
   python ../pachi-book/scripts/backtest.py --grade-files EP020=a.md,b.md   # ほかの点検の出力を採点（比較用）
+点検は check_all.py と check_reader.py（採用前に回すもの）の両方を回し、合わせて採点する。
 出力: research/tool-backtest/result-<日付>.md と、各話の対応表 research/tool-backtest/runs/EPxxx-check.md
 ツールを直したら回し、拾った数が減っていないかを見る。leak の付いた項目は、点検の指示文に答えが入っているので別に数える。
 """
@@ -31,7 +32,7 @@ import agent as A  # noqa: E402
 HERE = Path(__file__).resolve().parent
 JUDGE = """あなたは採点係です。ある話の点検結果が、作者があとで直した所（正解の一覧）を先に指摘できていたかを判定します。
 
-各正解について、点検結果の中に、同じ文（または同じ箇所）を挙げて、同じ向きの問題を言っている指摘があるかを見てください。
+各正解について、点検結果の中に、同じ文・同じ段落（同じ数行のまとまり）を挙げて、同じ向きの問題を言っている指摘があるかを見てください。引用している文が少し違っても、同じ段落の同じ問題なら拾ったとします。
 - 拾った：同じ箇所を挙げ、問題の向きも合っている
 - 一部：同じ箇所を挙げているが、問題の向きが違う（例：作者は削ったのに、点検は説明を足せと言う）／近い箇所の別の問題
 - 外れ：挙げていない
@@ -74,9 +75,18 @@ def run_check(ep, model, effort):
         cmd += ["--model", model]
     if effort:
         cmd += ["--effort", effort]
-    r = subprocess.run(cmd, cwd=tree, capture_output=True, text=True, encoding="utf-8")
-    out = tree / "episodes" / ep["episode"] / "notes" / f"check-{ep['version']}.md"
+    rcmd = [sys.executable, str(HERE / "check_reader.py"), ep["episode"], ep["version"], "--agent", "claude"] + cmd[6:]
+    with ThreadPoolExecutor(2) as pool:
+        f1 = pool.submit(subprocess.run, cmd, cwd=tree, capture_output=True, text=True, encoding="utf-8")
+        f2 = pool.submit(subprocess.run, rcmd, cwd=tree, capture_output=True, text=True, encoding="utf-8")
+        r = f1.result()
+        f2.result()
+    notes = tree / "episodes" / ep["episode"] / "notes"
+    out = notes / f"check-{ep['version']}.md"
     text = out.read_text(encoding="utf-8") if out.is_file() else None
+    reader = notes / f"reader-{ep['version']}-claude.md"
+    if text is not None and reader.is_file():
+        text += "\n\n# 初見読者レビュー（採用前の最後に回すもの）\n\n" + reader.read_text(encoding="utf-8")
     subprocess.run(["git", "worktree", "remove", "--force", str(tree)], cwd=work, capture_output=True)
     if text is None:
         return None, f"check_all 失敗：{(r.stdout + r.stderr).strip()[-300:]}"
