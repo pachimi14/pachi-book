@@ -112,7 +112,8 @@ def status(ep, ver):
                 why = "直さない理由にオーナーの言葉（オーナー（日付）「…」）がない"
         elif ans.startswith("直した") and latest is not None and "台帳" not in ans and "メモ" not in ans:
             left = [q for q in _quotes(place) if q in latest]
-            if left:
+            shown = [q for q in _quotes(ans) if q.replace("〜", "") in latest]   # 対応欄に引いた新しい文が後の版にあれば直したと見る
+            if left and not shown:
                 why = f"直したと書いたが {later[-1][1].name} に元の文が残っている：「{left[0][:30]}」"
         if why:
             bad.append((rid, why, l))
