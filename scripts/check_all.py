@@ -11,7 +11,7 @@
 
 使い方（作品リポジトリのルートで）:
   python ../pachi-book/scripts/check_all.py EP023 V2          # 点検して対応表を作る
-  python ../pachi-book/scripts/check_all.py EP023 V2 --status # 必須の対応が空の行を数える（0 でなければ終了コード 1）
+  python ../pachi-book/scripts/check_all.py EP023 V2 --status # 閉じていない行を数える（0 でなければ終了コード 1。読みにくさの行は「直さない」で閉じられない）
 初見読者レビュー（check_reader.py）は別。採用前の最後に一回回す。
 """
 import argparse
@@ -65,19 +65,62 @@ def mechanical(ep, ver):
     return (r.stdout + r.stderr).strip()
 
 
+READABLE_OK = ("事実", "段階")   # 「直さない」で閉じてよいのは筋の行だけ（2026-10-02 オーナー）
+OWNER_WORDS = re.compile(r"オーナー[（(]\d{4}-\d{2}-\d{2}[)）]「[^」]+」")
+REF_MUST = re.compile(r"日本語|重複|二度|繰り返|同じことを|普通の言い方")
+
+
+def _cells(line):
+    return [c.strip() for c in line.strip().strip("|").split("|")]
+
+
+def _quotes(cell):
+    return [q for q in re.findall(r"「([^」]{6,})」", cell)]
+
+
 def status(ep, ver):
+    """2026-10-02 オーナー：点検が拾った読みにくさを、書き手が「直さない」と書いて閉じていた（EP024 V10）。
+    - 必須：未は空。「直さない」で閉じてよいのは種類が事実・段階の行だけで、オーナーの言葉を「オーナー（日付）「…」」で引く。
+      それ以外（話し手・指示語・つながり・照準・AIっぽい・ダメな例など読みにくさ）の「直さない」は空と数える。
+    - 参考：日本語の不自然さ・重複・繰り返しの行は必須と同じに扱う。ほかの参考も「未」のままにしない（読んで直す／直さないを書く）。
+    - 「直した」と書いた行は、引用した元の文が後の版にそのまま残っていたら空に戻す。"""
     p = A.notes_dir(ep) / f"check-{ver}.md"
     if not p.is_file():
         sys.exit(f"{p.relative_to(A.WORK)} がない（先に点検を回す）")
     lines = p.read_text(encoding="utf-8").splitlines()
     rows = [l for l in lines if re.match(r"\|\s*C\d+", l)]
     ref = [l for l in lines if re.match(r"\|\s*R\d+", l)]
-    open_rows = [l for l in rows if re.search(r"\|\s*未\s*\|?\s*$", l)]
-    done_ref = [l for l in ref if not re.search(r"\|\s*未\s*\|?\s*$", l)]
-    print(f"{p.relative_to(A.WORK)}：必須 {len(rows)} 行（対応が空 {len(open_rows)}）、参考 {len(ref)} 行（直した・判断した {len(done_ref)}）")
-    for l in open_rows:
-        print("  " + l[:80])
-    sys.exit(1 if open_rows else 0)
+    n = int(ver.lstrip("V"))
+    later = sorted((int(m.group(1)), f) for f in (A.WORK / "episodes" / ep).glob("V*.md")
+                   if (m := re.match(r"V(\d+)\.md$", f.name)) and int(m.group(1)) > n)
+    latest = later[-1][1].read_text(encoding="utf-8") if later else None
+    bad = []
+    for l, must in [(l, True) for l in rows] + [(l, False) for l in ref]:
+        c = _cells(l)
+        if len(c) < 3:
+            continue
+        rid, place, kind, ans = c[0], c[1], c[2], c[-1]
+        text = " ".join(c[1:-1])
+        hard = must or bool(REF_MUST.search(text))
+        why = None
+        if re.fullmatch(r"未?", ans):
+            why = "未"
+        elif ans.startswith("直さない") and hard:
+            if not any(k in kind for k in READABLE_OK):
+                why = "読みにくさの行は「直さない」で閉じられない"
+            elif not OWNER_WORDS.search(ans):
+                why = "直さない理由にオーナーの言葉（オーナー（日付）「…」）がない"
+        elif ans.startswith("直した") and latest is not None and "台帳" not in ans and "メモ" not in ans:
+            left = [q for q in _quotes(place) if q in latest]
+            if left:
+                why = f"直したと書いたが {later[-1][1].name} に元の文が残っている：「{left[0][:30]}」"
+        if why:
+            bad.append((rid, why, l))
+    print(f"{p.relative_to(A.WORK)}：必須 {len(rows)} 行・参考 {len(ref)} 行。閉じていない {len(bad)} 行"
+          + (f"（直したかは {later[-1][1].name} で確かめた）" if later else "（後の版がないので、直したかは確かめていない）"))
+    for rid, why, l in bad:
+        print(f"  {rid}：{why}")
+    sys.exit(1 if bad else 0)
 
 
 def main():
