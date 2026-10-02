@@ -59,11 +59,24 @@ def tier_of(subj):
     return "指示"
 
 
+def not_owner():
+    """件名に「オーナー」「owner:」があっても、オーナー本人の指摘・選択でないコミット（GPT など AI の判断）。
+    作品の <taste_dir>/not-owner-commits.txt に「短いハッシュ 理由」を一行ずつ書く（2026-10-02 オーナー：
+    EP024 で GPT の判断をオーナーの選択として記録してしまった。件名は push 済みで直せないので、ここで外す）。"""
+    p = tdir() / "not-owner-commits.txt"
+    if not p.is_file():
+        return set()
+    return {l.split()[0][:7] for l in p.read_text(encoding="utf-8").splitlines() if l.strip() and not l.startswith("#")}
+
+
 def from_git():
     out = []
+    skip = not_owner()
     for line in git("log", "--format=%H%x09%an%x09%s").splitlines():
         h, author, subj = line.split("\t", 2)
         if "オーナー" not in subj and "owner:" not in subj:
+            continue
+        if h[:7] in skip:
             continue
         for st in git("diff-tree", "--no-commit-id", "-r", "--name-status", h).splitlines():
             parts = st.split("\t")

@@ -28,17 +28,37 @@ if hasattr(sys.stdout, "reconfigure"):
 KINDS = "ABCDEF?"
 
 
+def not_owner():
+    """件名に (owner:…) があっても、オーナー本人の指摘でないコミット（GPT など AI の判断）を外す。
+    作品の pachi.json の taste_dir（既定 research/taste）の not-owner-commits.txt に「短いハッシュ 理由」を一行ずつ（2026-10-02）。"""
+    import json
+    from pathlib import Path
+    d = "research/taste"
+    try:
+        d = json.loads(Path("pachi.json").read_text(encoding="utf-8")).get("taste_dir", d)
+    except Exception:
+        pass
+    p = Path(d) / "not-owner-commits.txt"
+    if not p.is_file():
+        return set()
+    return {l.split()[0][:7] for l in p.read_text(encoding="utf-8").splitlines() if l.strip() and not l.startswith("#")}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--since", default=None)
     ap.add_argument("--rev", default="HEAD")
     a = ap.parse_args()
-    cmd = ["git", "log", a.rev, "--format=%s"]
+    cmd = ["git", "log", a.rev, "--format=%h%x09%s"]
     if a.since:
         cmd.append(f"--since={a.since}")
-    subjects = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8").stdout.splitlines()
+    lines = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8").stdout.splitlines()
+    skip = not_owner()
     table = defaultdict(lambda: defaultdict(int))
-    for s in subjects:
+    for line in lines:
+        h, _, s = line.partition("\t")
+        if h[:7] in skip:
+            continue
         tags = re.findall(r"\(owner(?::([A-F?,\s]+))?\)", s)
         if not tags:
             continue
