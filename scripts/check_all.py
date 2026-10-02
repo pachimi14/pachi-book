@@ -106,9 +106,11 @@ def status(ep, ver):
         if re.fullmatch(r"未?", ans):
             why = "未"
         elif ans.startswith("直さない") and hard:
-            if not any(k in kind for k in READABLE_OK):
-                why = "読みにくさの行は「直さない」で閉じられない"
-            elif not OWNER_WORDS.search(ans):
+            if OWNER_WORDS.search(ans):
+                pass   # オーナー本人が決めた行は、種類を問わず閉じてよい（AI の判断では閉じられない）
+            elif not any(k in kind for k in READABLE_OK):
+                why = "読みにくさの行は「直さない」で閉じられない（閉じられるのはオーナーの言葉を引いたときだけ）"
+            else:
                 why = "直さない理由にオーナーの言葉（オーナー（日付）「…」）がない"
         elif ans.startswith("直した") and latest is not None and "台帳" not in ans and "メモ" not in ans:
             left = [q for q in _quotes(place) if q in latest]
