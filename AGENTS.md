@@ -29,6 +29,8 @@
 # 本文
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md   # 機械の点検（作品の tools/work_checks.py も読む）
 python ../pachi-book/scripts/check_all.py EP001 V1                   # 機械・筋・声の点検をまとめた対応表 notes/check-V1.md
+python ../pachi-book/scripts/check_all.py EP001 V2 --base V1         # 差分の点検（直すたび。文脈だけ。notes/diff-V2.md）
+python ../pachi-book/scripts/check_all.py EP001 V9 --final           # 採用前の全文の点検（直すか行ごとに選ぶ）
 python ../pachi-book/scripts/check_all.py EP001 V1 --status          # 必須の対応が空の行（0 になるまで埋める）
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V2.md --base episodes/EP001/V1.md   # 直しで字数が増えすぎていないか
 python ../pachi-book/scripts/check_reader.py EP001 V1                # 初見読者レビュー（採用前の最後に一回）

@@ -72,7 +72,8 @@ python ../pachi-book/scripts/propose.py EPxxx Vn --apply P…-A --to V(n+1)
 
 ### 6. 採用の前
 - 直しが数か所の小さなもの：`propose.py` の点検で足りる。
-- 場面単位の書き直し、または直しが5か所を超えたとき：`check_all.py` と `check_reader.py` をかけ直す。オーナー承認済みの文が引っかかったら、決まり2のとおり報告する。
+- 直すたびに差分の点検 `check_all.py EPxxx Vn --base 直す前の版`（文脈だけを見る。全文の点検や読者レビューはかけ直さない。2026-10-03 オーナー）。オーナーの文やオーナー承認済みの文が引っかかったら、決まり2のとおり報告する。
+- 採用前に一度だけ `check_all.py EPxxx Vn --final`（必須と出ても、直すのは破綻と面白くなる所だけ。ほかは「見送り：理由」）→ `check_reader.py` を1回 → 直したら差分の点検。
 
 ### 7. 記録
 - コミットの件名に `(owner:X)`、`blocks/BAD-EXAMPLES.md` に元の文と直した文の組（fix-line の 7）。
