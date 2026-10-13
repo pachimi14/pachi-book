@@ -138,7 +138,7 @@ def main():
         sys.exit("メモのファイルがない")
     memo = A.SEP.join(f"# メモ（{m}）\n\n{A.read(m)}" for m in a.memo)
     ctx = A.SEP.join([A.canon_context(), A.section("これまでのあらすじ", A.doc("synopsis")),
-                      A.section("オーナーの目", A.doc("owner_eye")), A.section("オーナーが直した例", A.doc("bad_examples"))])
+                      A.section("オーナーの目", A.doc("owner_eye"))])
     if a.after:
         ep = a.after
         body = A.read(f"episodes/current/{ep}.md")

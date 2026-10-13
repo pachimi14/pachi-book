@@ -28,12 +28,14 @@
 ```bash
 # 本文
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md   # 機械の点検（作品の tools/work_checks.py も読む）
-python ../pachi-book/scripts/check_all.py EP001 V1                   # 初稿の点検（機械・筋。声は回らない）。対応表 notes/check-V1.md（2026-10-13）
+python ../pachi-book/scripts/check_reuse.py EP001 V1                 # 再演の点検（機械。前の採用版と同じ言い回し・台帳で封印した材料。check_all が一緒に回す。2026-10-13）
+python ../pachi-book/scripts/check_all.py EP001 V1                   # 初稿の点検（機械・再演・筋。声は回らない）。対応表 notes/check-V1.md（2026-10-13）
 python ../pachi-book/scripts/check_all.py EP001 V2 --base V1         # 差分の点検（筋・人物・場面の順が変わる直しのときだけ。文脈だけ。notes/diff-V2.md）
-python ../pachi-book/scripts/check_all.py EP001 V9 --final           # 採用前の全文の点検（機械・筋・声。直すか行ごとに選ぶ）
+python ../pachi-book/scripts/check_all.py EP001 V9 --final           # 採用前の全文の点検（機械・再演・筋・声。直すか行ごとに選ぶ）
 python ../pachi-book/scripts/check_all.py EP001 V1 --status          # 必須の対応が空の行（0 になるまで埋める）
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V2.md --base episodes/EP001/V1.md   # 直しで字数が増えすぎていないか
 python ../pachi-book/scripts/check_reader.py EP001 V1                # 初見読者レビュー（採用前の最後に一回）
+python ../pachi-book/scripts/check_reader.py EP001 V1 --model claude-sonnet-5-5 --effort medium   # 二人目の読者（別モデル。盲点を変える。2026-10-13）
 python ../pachi-book/scripts/propose.py EP001 V1 --issue "指摘" --cand 案A.txt --cand 案B.txt   # 直し案の点検と番号（P…）。オーナーに見せる案は必ずこれを通す
 python ../pachi-book/scripts/propose.py EP001 V1 --apply P…-A --to V2   # 選ばれた案を、点検した文のまま新しい版に入れる（選択は好みの材料に記録）
 python ../pachi-book/scripts/taste.py build|eval   # オーナーの好みの判定役：材料を作る／伏せた組で当たりを測る
@@ -57,9 +59,15 @@ python ../pachi-book/scripts/backtest.py          # 点検ツールの回帰テ�
 - モデルは固定する（点検のぶれにモデルの違いを混ぜない）：既定 `claude-opus-5-5`、effort `high`。変えるときは `PACHI_MODEL` / `PACHI_EFFORT` か各スクリプトの `--model` / `--effort`。
 - エージェントの選択：`PACHI_AGENT`（auto／claude／codex）。auto はクラウドでは claude だけ、ローカルでは claude と codex。
 - CLI が PATH にない場合は `PACHI_CLAUDE` / `PACHI_CODEX` にパスを設定する。打ち切りは `PACHI_TIMEOUT`（既定 900 秒）。
-- 作品の資料の場所（あらすじ・台帳・口調カード・オーナーの目・ダメな例・良い例）は、作品ルートの `pachi.json` で上書きできる（既定は `scripts/agent.py` の DEFAULTS）。
+- 作品の資料の場所（あらすじ・台帳・口調カード・オーナーの目・書き手の一枚 write_brief・材料の台帳 motifs・人物名 names）は、作品ルートの `pachi.json` で上書きできる（既定は `scripts/agent.py` の DEFAULTS）。
 - 点検は直す方向だけを言い、直した文は出さない（ツールの直し案がそのまま本文に入り、オーナーに消される一行を生んでいたため。2026-10-01）。
 - 対応表は「必須」（筋と事実だけ。2026-10-13）と「参考」（AIっぽい・照準・仕組み・文体）に分ける。参考は書き手が選び、削るだけで対応しない。AIっぽい文は「抽象のまとめ」だけで、段落の最後の具体の評価の一文は語り手の声なので残す。全部に従うと本文が長くなり、オーナーの直しから離れる（2026-10-01 の実験）。
+- 点検側の組み替え（2026-10-13。原因の切り分け：research/process-review-2026-10-13.md §10）：
+  - 点検は「間違いを見つける係」で、面白さは見ない（面白さは一行の案と場面の ○△×）。拾えない種類（現場の細部 C・足りない所 F）は点検で追わず、状況の棚と場面単位の判断で上流に置く。
+  - 「くどい」「第1章と同じ反応」は LLM に見えない（渡すのは直前の一話だけ）ので、機械 `check_reuse.py` が前の採用版との重なりと台帳の封印を数える。［再演］［封印］は必須。
+  - 点検役の「良い例」は第1章の一言集（GOOD-EXAMPLES）から、書き手の一枚（WRITE-BRIEF）と直前の採用話に替えた（一言集は繰り返しを正解と判定していた）。
+  - BAD-EXAMPLES（オーナーの直しの組）は筋・声・メモの点検から外した（過去の型しか拾えず、99KB で外れを増やした）。同じ型の場面のものを `--bad-examples` で渡すときだけ使う。
+  - 読者レビューは書き手と別のモデルで二人目を回せる（同じモデルは盲点が同じ）。
 - 面白さは点検で決めない。LLM の判定役はオーナーの版を選べなかった（2026-10-01）。面白さの判断はオーナーがする。面白さを入れる場所は「一行の案」（write-episode 1）で、オーナーが「読みたい」を付ける。案は作品の状況の棚（research/seeds/）と材料の台帳（blocks/MOTIFS.md）を引いて出す（2026-10-13）。
 
 ## 改善の測り方

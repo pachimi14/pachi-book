@@ -19,7 +19,8 @@
   blocks/*-memos.md   ブロックの全話のメモ（templates/work/blocks/BLOCK-MEMOS.md の形）
   blocks/SYNOPSIS.md  採用話のあらすじ（「- 第N話」の行。点検が前の話までのあらすじとして使う）
   blocks/GOOD-EXAMPLES.md  良い例（書く前に読む）
-  blocks/BAD-EXAMPLES.md   オーナーが直した文の組（書いたあとの点検で使う）
+  blocks/BAD-EXAMPLES.md   オーナーが直した文の組（行の磨きで、同じ型の場面のものを選んで渡す。点検には既定で渡さない。2026-10-13）
+  blocks/MOTIFS.md         材料の台帳（使った材料と働き。「検索語」の列を check_reuse.py が本文に当てる。2026-10-13）
   blocks/OWNER-EYE.md      オーナーの目（書いたあとの点検で使う）
   blocks/VOICE-CARDS.md    人物ごとの口調
   pachi.json          点検が読む資料の場所・台帳で決まった数字（任意）
@@ -44,8 +45,8 @@
 1b. **分解**：確定したあらすじを各話のメモに分ける。筋を変えたくなったらあらすじに戻る。
 2. **温度の確認**：見せ場の一場面だけ書いてオーナーに見せる。
 3. **全文**：`episodes/EPxxx/Vn.md` に新しい版として保存し、`sync_current.py`。
-4. **点検**：`check_episode.py`（ERROR は直す）→ `check_all.py`（対応表。必須と参考）→ 必須の対応を全部埋める（`--status` が 0）。参考は書き手が選ぶ。直した版は `check_episode.py --base` で字数の増えすぎを見る。
-5. **初見読者レビュー**：採用前の全文の点検 `check_all.py --final`（行ごとに直すか選ぶ）のあと、`check_reader.py` を一回。【分からない】を直す。
+4. **点検**：`check_episode.py`（ERROR は直す）→ `check_all.py`（機械・再演・筋の対応表。必須と参考。再演は `check_reuse.py`）→ 必須の対応を全部埋める（`--status` が 0）。参考は書き手が選ぶ。直した版は `check_episode.py --base` で字数の増えすぎを見る。
+5. **初見読者レビュー**：採用前の全文の点検 `check_all.py --final`（行ごとに直すか選ぶ）のあと、`check_reader.py` を一回（二人目は別のモデルで。任意）。【分からない】を直す。
    全文の点検は一話に2回（初稿のあと／採用前の `--final`）。それ以外の直しは、直すたびに差分の点検 `check_all.py EPxxx Vn --base 直す前の版`（文脈だけ。notes/diff-Vn.md）。オーナーが書いた文は一字も直さず、文脈で引っかかったら報告する（notes/owner-lines.md。2026-10-03 オーナー）。
 6. **オーナー確認**：最初に「面白いか」、次に欠陥。オーナーの指摘で直したコミットには `(owner:A〜F)` を付ける。
 6b. **直す**（`skills/revise-episode.md`）：オーナーに見せる文の案は `propose.py` で点検して番号を付けてから出し、選ばれた案は `--apply` で入れる。オーナーの承認は判断の承認で、文の点検の免除ではない（あとの点検で引っかかったら報告して聞く）。直しの基準はその話のメモで、点検は一つの指摘につき2回まで（2026-10-02）。

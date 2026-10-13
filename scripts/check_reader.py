@@ -6,7 +6,11 @@
 
 使い方（作品リポジトリのルートで）:
   python ../pachi-book/scripts/check_reader.py EP018 V5
-出力: episodes/EPxxx/notes/reader-Vn-<agent>.md（クラウドは claude だけ、ローカルは claude と codex）
+  python ../pachi-book/scripts/check_reader.py EP018 V5 --model claude-sonnet-5-5 --effort medium   # 二人目の読者（別モデル）
+出力: episodes/EPxxx/notes/reader-Vn-<agent>.md（クラウドは claude だけ、ローカルは claude と codex）。
+--model を付けたときは reader-Vn-<agent>-<model>.md。
+2026-10-13：書き手と点検役が同じモデルだと盲点が同じになる（LLM はオーナーが削る一言を好んだ）。二人目は別のモデルで回し、
+「読み流す読者」に近い反応を取る（ローカルの codex と同じ役）。
 """
 import argparse
 import sys
@@ -66,7 +70,8 @@ def main():
         if err:
             print(f"{name}: {err}（オーナーに報告する）")
             continue
-        out = A.notes_dir(a.episode) / f"reader-{a.version}-{name}.md"
+        tag = name + (f"-{a.model.replace('claude-', '')}" if a.model else "")   # 二人目の読者（別モデル）は名前で区別する（2026-10-13）
+        out = A.notes_dir(a.episode) / f"reader-{a.version}-{tag}.md"
         print(A.write(out, f"# 初見読者レビュー {a.episode} {a.version}（{name}）\n\n{text}"))
 
 

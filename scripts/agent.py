@@ -44,6 +44,10 @@ DEFAULTS = {
     "bad_examples": "blocks/BAD-EXAMPLES.md",  # オーナーが直した文の組
     "good_examples": "blocks/GOOD-EXAMPLES.md",
     "line_aim": None,                          # 主人公の「らしい一言」の照準の問い（例 blocks/FAN-LINE-AIM.md）
+    "write_brief": None,                       # 書き手の一枚（地の文の仕事と形・見本の話。声の点検が読む。2026-10-13）
+    "motifs": "blocks/MOTIFS.md",              # 材料の台帳（「検索語」の列を check_reuse.py が当てる）
+    "names": [],                               # 人物名（再演の点検で、名前だけの重なりを除く）
+    "reuse_ignore": [],                        # 再演の点検で出さない言い回し
     "fixed_numbers": [],
     "market": [],                              # 市場の調べ（ストーリーテラーが読む）
     "goal": "",                                # 作品の目標（例：公開から1か月で★1000）

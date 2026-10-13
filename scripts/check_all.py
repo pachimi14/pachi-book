@@ -2,7 +2,7 @@
 """本文の点検を一度に回し、一枚の対応表にまとめる（2026-10-01）。
 
 回すもの（並行）：
-  機械：check_episode.py（作品の tools/work_checks.py を含む）
+  機械：check_episode.py（作品の tools/work_checks.py を含む）と check_reuse.py（再演。前の採用版との言い回しの重なり・台帳で封印した材料）
   筋：check_logic.py（1回）
   声：check_voice.py（2回。ぶれを補う）
 そのあと、まとめ役が重なりを一つにし、重い順に番号を振って notes/check-Vn.md に書く。
@@ -49,12 +49,14 @@ MERGE = """あなたはこの連載の編集長です。一つの話に、別々
 - 本文に照らして間違っている指摘（本文に書いてあることを「ない」と言う、など）は落とす。
 - 声の点検で一回にしか出ていない指摘は、本文に照らして当たっているものだけ残す。
 - 機械の点検の WARN は、本文を見て直す価値のあるものだけ残す（台帳で決まった数字、意図した型は落とす）。
+- 機械の「再演の点検」の［再演］（前の採用版 2 話以上に同じ言い回し）と［封印］（台帳で封印した材料）は、落とさず必須に入れる（種類「再演」。2026-10-10 オーナー「2 回以上なら使わない」）。
+  ただし事実として触れているだけ（「あの夜の流れ星」と名詞で指すだけ）なら、直す方向を「事実の言及なら残す」と書く。［既出］［転換点］は参考（種類「再演」）。
 - 重い順に並べる：①事実・筋の食い違い ②読者が一度で詰まる ③抽象のまとめ・ダメな例の型 ④足りない所・書きすぎ ⑤リズム・数字。
 - 直した文は書かない。直す方向を一言だけ書く。
 - 筋の点検の「確実」は、本文に照らして間違っていない限り全部残す。行の数で削らない（2026-10-01：25行で打ち切って当たりを落としていた）。
 
 表は二つに分ける（2026-10-01：全部の行に従うと本文が4割長くなり、オーナーの直しとかけ離れた。2026-10-13：声の文まで削られて報告だけが残ったので、必須を筋と事実に絞った）。
-- 必須：事実／つながり／指示語／話し手／立場／段階／人の動き／読者が知らない言葉／現場の細部／決定との照合（本文が作者の決定から外れた所）。読者が一度で詰まる・筋が食い違う所だけ。
+- 必須：事実／つながり／指示語／話し手／立場／段階／人の動き／読者が知らない言葉／現場の細部／決定との照合（本文が作者の決定から外れた所）／再演（［再演］［封印］）。読者が一度で詰まる・筋が食い違う・前の話の繰り返しの所だけ。
 - 参考：照準／AIっぽい／ダメな例／仕組み／比喩／緊張／足りない／書きすぎ／リズム／数字。直すかどうかは書き手が選ぶ（採用前の点検では行ごとに「直す／見送り」を選ぶ）。
 - AIっぽい文の扱い（2026-10-13 オーナー）：削るのは「抽象のまとめ」だけ。気持ちを抽象語で名づける（覚悟・言葉を持っていなかった）、否定の強調の決まり文句（何ひとつ〜なかった）、AならX・BはYの対句、格言。
   段落の最後の「具体の評価」の一文（我ながら苦しい。たぶん逆効果だった。審査員は俺一人だったが、通った。）はこの語り手の声そのもので、AIっぽい文ではない。挙げない。
@@ -72,7 +74,7 @@ MERGE = """あなたはこの連載の編集長です。一つの話に、別々
 |---|---|---|---|---|---|---|
 | R01 | 「…」 | 比喩 | … | … | 声2回 | 未 |
 
-出どころは「機械」「筋」「声1回」「声2回」の組み合わせ。対応の欄は全部「未」にする。
+出どころは「機械」「再演」「筋」「声1回」「声2回」の組み合わせ。対応の欄は全部「未」にする。
 """
 
 
@@ -151,10 +153,12 @@ def diff_check(ep, ver, base, a):
 
 
 def mechanical(ep, ver):
-    script = Path(__file__).resolve().parent / "check_episode.py"
-    r = subprocess.run([sys.executable, str(script), f"episodes/{ep}/{ver}.md"], capture_output=True, text=True,
+    here = Path(__file__).resolve().parent
+    r = subprocess.run([sys.executable, str(here / "check_episode.py"), f"episodes/{ep}/{ver}.md"], capture_output=True, text=True,
                        encoding="utf-8", cwd=A.WORK)
-    return (r.stdout + r.stderr).strip()
+    r2 = subprocess.run([sys.executable, str(here / "check_reuse.py"), ep, ver], capture_output=True, text=True,
+                        encoding="utf-8", cwd=A.WORK)   # 再演の点検（2026-10-13）
+    return (r.stdout + r.stderr).strip() + "\n\n" + (r2.stdout + r2.stderr).strip()
 
 
 READABLE_OK = ("事実", "段階")   # 「直さない」で閉じてよいのは筋の行だけ（2026-10-02 オーナー）
@@ -253,6 +257,7 @@ def main():
     ap.add_argument("--base", help="差分の点検：前の版（例 V21）。直したことで文脈がおかしくなっていないかだけを見る")
     ap.add_argument("--final", action="store_true", help="採用前の全文の点検（行ごとに直すか選ぶ。見送りは理由つきで閉じる）")
     ap.add_argument("--voice", action="store_true", help="声の点検も回す（既定では採用前の --final のときだけ回す。2026-10-13）")
+    ap.add_argument("--bad-examples", help="声の点検に渡す、同じ型の場面のオーナーの直しの組（ファイル）。既定では渡さない")
     A.add_model_args(ap)
     a = ap.parse_args()
     ep, ver = a.episode, a.version
@@ -266,7 +271,8 @@ def main():
     jobs = [(name, check_logic.prompts(ep, ver), "logic")]
     with_voice = a.final or a.voice
     if with_voice:   # 2026-10-13：初稿の点検は機械と筋だけ。声の点検は採用前（--final）か --voice のときだけ
-        jobs += [(name, check_voice.prompt(ep, ver), "voice-1"), (name, check_voice.prompt(ep, ver), "voice-2")]
+        vp = check_voice.prompt(ep, ver, a.bad_examples)
+        jobs += [(name, vp, "voice-1"), (name, vp, "voice-2")]
     got = {"voice-1": "（今回は回していない。初稿の点検は機械と筋だけ。2026-10-13）", "voice-2": "（同上）"}
     for tag, text, err in A.run_many(jobs, a.model, a.effort):
         if err:
