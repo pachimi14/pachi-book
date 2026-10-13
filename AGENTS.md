@@ -39,6 +39,8 @@ python ../pachi-book/scripts/check_reader.py EP001 V1 --model claude-sonnet-5-5 
 python ../pachi-book/scripts/propose.py EP001 V1 --issue "指摘" --cand 案A.txt --cand 案B.txt   # 直し案の点検と番号（P…）。オーナーに見せる案は必ずこれを通す
 python ../pachi-book/scripts/propose.py EP001 V1 --apply P…-A --to V2   # 選ばれた案を、点検した文のまま新しい版に入れる（選択は好みの材料に記録）
 python ../pachi-book/scripts/taste.py build|eval   # オーナーの好みの判定役：材料を作る／伏せた組で当たりを測る
+python ../pachi-book/scripts/fun_judge.py pitch <一行の案> | scenes EP001 V1 | draft EP001 V1 V2   # 面白さの判定役の試験：オーナーの印の前に判定を記録（2026-10-13）
+python ../pachi-book/scripts/fun_judge.py score pitch <一行の案> | score scenes EP001 V1 | score draft EP001 --owner V2   # 印が付いたら当たりを出す
 # 方向・あらすじ・メモ
 python ../pachi-book/scripts/story_direction.py --target "第3章"   # ストーリーテラー：市場の実績と作品の流れから、次の章の方向の案（chapters/DIRECTION-日付.md）
 python ../pachi-book/scripts/check_memo.py chapters/CH-01-STORY.md    # 章のあらすじの監査（通し読み・二択・現場）
@@ -68,7 +70,7 @@ python ../pachi-book/scripts/backtest.py          # 点検ツールの回帰テ�
   - 点検役の「良い例」は第1章の一言集（GOOD-EXAMPLES）から、書き手の一枚（WRITE-BRIEF）と直前の採用話に替えた（一言集は繰り返しを正解と判定していた）。
   - BAD-EXAMPLES（オーナーの直しの組）は筋・声・メモの点検から外した（過去の型しか拾えず、99KB で外れを増やした）。同じ型の場面のものを `--bad-examples` で渡すときだけ使う。
   - 読者レビューは書き手と別のモデルで二人目を回せる（同じモデルは盲点が同じ）。
-- 面白さは点検で決めない。LLM の判定役はオーナーの版を選べなかった（2026-10-01）。面白さの判断はオーナーがする。面白さを入れる場所は「一行の案」（write-episode 1）で、オーナーが「読みたい」を付ける。案は作品の状況の棚（research/seeds/）と材料の台帳（blocks/MOTIFS.md）を引いて出す（2026-10-13）。
+- 面白さは点検で決めない（仮の決まり）。「LLM の判定役はオーナーの版を選べなかった（2026-10-01）」は n=5・資料が第1章の一言集だけ・筋の直し混在で根拠が弱い（2026-10-13 オーナー「本当にそうなのかな？」）。`fun_judge.py` で、一行の案・場面の ○△×・初稿二本の三つの単位で、オーナーの印の前に判定を記録して当たりを測り直す。当たるまでは面白さの判断はオーナーがする。面白さを入れる場所は「一行の案」（write-episode 1）で、オーナーが「読みたい」を付ける。案は作品の状況の棚（research/seeds/）と材料の台帳（blocks/MOTIFS.md）を引いて出す（2026-10-13）。
 
 ## 改善の測り方
 
