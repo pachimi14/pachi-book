@@ -195,6 +195,8 @@ def main():
             warns.append(f"{i}行目：算用数字（地の文・台詞は漢数字）")
         if len(s) > 120:
             warns.append(f"{i}行目：1行が{len(s)}字（120字以内）")
+        if re.fullmatch(re.escape(scene_mark) + r"場面[0-9０-９]+", s):
+            continue   # 採用前の仮の場面印「◇場面N」（2026-10-13 オーナー。採用のとき本物の記号だけ残す）
         if len(s) <= 12 and re.fullmatch(r"[^\w぀-ヿ一-鿿]+", s) and s not in ("……", "――") and not head in "「『〈【":
             if s != scene_mark:
                 warns.append(f"{i}行目：場面転換記号が「{s}」（この作品は「{scene_mark}」）")

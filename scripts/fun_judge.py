@@ -215,13 +215,13 @@ SCENE_ASK = """あなたは、この連載のオーナー（作者）の判断�
 def scenes_of(text):
     parts, cur = [], []
     for line in text.splitlines():
-        if line.strip() == "◇":
+        if re.fullmatch(r"◇(場面[0-9０-９]+)?", line.strip()):   # 採用前の仮の場面印「◇場面N」も区切り（2026-10-13）
             parts.append("\n".join(cur).strip())
             cur = []
         else:
             cur.append(line)
     parts.append("\n".join(cur).strip())
-    return [p for p in parts if p]
+    return [p for p in parts if p and not re.fullmatch(r"第[0-9０-９〇一二三四五六七八九十百]+話.*", p)]   # 題名だけの先頭は場面にしない
 
 
 def scene_label(s):
