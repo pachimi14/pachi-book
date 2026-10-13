@@ -28,9 +28,9 @@
 ```bash
 # 本文
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md   # 機械の点検（作品の tools/work_checks.py も読む）
-python ../pachi-book/scripts/check_all.py EP001 V1                   # 機械・筋・声の点検をまとめた対応表 notes/check-V1.md
-python ../pachi-book/scripts/check_all.py EP001 V2 --base V1         # 差分の点検（直すたび。文脈だけ。notes/diff-V2.md）
-python ../pachi-book/scripts/check_all.py EP001 V9 --final           # 採用前の全文の点検（直すか行ごとに選ぶ）
+python ../pachi-book/scripts/check_all.py EP001 V1                   # 初稿の点検（機械・筋。声は回らない）。対応表 notes/check-V1.md（2026-10-13）
+python ../pachi-book/scripts/check_all.py EP001 V2 --base V1         # 差分の点検（筋・人物・場面の順が変わる直しのときだけ。文脈だけ。notes/diff-V2.md）
+python ../pachi-book/scripts/check_all.py EP001 V9 --final           # 採用前の全文の点検（機械・筋・声。直すか行ごとに選ぶ）
 python ../pachi-book/scripts/check_all.py EP001 V1 --status          # 必須の対応が空の行（0 になるまで埋める）
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V2.md --base episodes/EP001/V1.md   # 直しで字数が増えすぎていないか
 python ../pachi-book/scripts/check_reader.py EP001 V1                # 初見読者レビュー（採用前の最後に一回）
@@ -59,8 +59,8 @@ python ../pachi-book/scripts/backtest.py          # 点検ツールの回帰テ�
 - CLI が PATH にない場合は `PACHI_CLAUDE` / `PACHI_CODEX` にパスを設定する。打ち切りは `PACHI_TIMEOUT`（既定 900 秒）。
 - 作品の資料の場所（あらすじ・台帳・口調カード・オーナーの目・ダメな例・良い例）は、作品ルートの `pachi.json` で上書きできる（既定は `scripts/agent.py` の DEFAULTS）。
 - 点検は直す方向だけを言い、直した文は出さない（ツールの直し案がそのまま本文に入り、オーナーに消される一行を生んでいたため。2026-10-01）。
-- 対応表は「必須」（事実・筋・詰まる所）と「参考」（文体など）に分ける。参考は書き手が選ぶ。全部に従うと本文が長くなり、オーナーの直しから離れる（2026-10-01 の実験）。
-- 面白さは点検で決めない。LLM の判定役はオーナーの版を選べなかった（2026-10-01）。面白さの判断はオーナーがする。
+- 対応表は「必須」（筋と事実だけ。2026-10-13）と「参考」（AIっぽい・照準・仕組み・文体）に分ける。参考は書き手が選び、削るだけで対応しない。AIっぽい文は「抽象のまとめ」だけで、段落の最後の具体の評価の一文は語り手の声なので残す。全部に従うと本文が長くなり、オーナーの直しから離れる（2026-10-01 の実験）。
+- 面白さは点検で決めない。LLM の判定役はオーナーの版を選べなかった（2026-10-01）。面白さの判断はオーナーがする。面白さを入れる場所は「一行の案」（write-episode 1）で、オーナーが「読みたい」を付ける。案は作品の状況の棚（research/seeds/）と材料の台帳（blocks/MOTIFS.md）を引いて出す（2026-10-13）。
 
 ## 改善の測り方
 
