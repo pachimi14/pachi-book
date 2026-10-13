@@ -13,7 +13,8 @@
   python ../pachi-book/scripts/backtest.py --grade-files EP020=a.md,b.md   # ほかの点検の出力を採点（比較用）
 点検は check_all.py と check_reader.py（採用前に回すもの）の両方を回し、合わせて採点する。
 出力: research/tool-backtest/result-<日付>.md と、各話の対応表 research/tool-backtest/runs/EPxxx-check.md
-ツールを直したら回し、拾った数が減っていないかを見る。leak の付いた項目は、点検の指示文に答えが入っているので別に数える。
+ツールを直したら回し、拾った数が減っていないかを見る。
+2026-10-13：既定の check_all は声を回さない（初稿の条件）。2026-10-01 の 62% は声×2 を含むので、比べるときは --voice を付ける。leak の付いた項目は、点検の指示文に答えが入っているので別に数える。
 """
 import argparse
 import datetime
@@ -54,7 +55,7 @@ def judge(ep_items, report, model, effort):
         return None, f"判定の JSON が読めない：{e}"
 
 
-def run_check(ep, model, effort):
+def run_check(ep, model, effort, voice=False):
     """base の作業ツリーで check_all を回し、対応表の中身を返す。"""
     work = A.WORK
     tree = Path(os.environ.get("PACHI_BT_DIR", str(work.parent / ".pachi-backtest"))) / ep["episode"]
@@ -76,6 +77,8 @@ def run_check(ep, model, effort):
     if effort:
         cmd += ["--effort", effort]
     rcmd = [sys.executable, str(HERE / "check_reader.py"), ep["episode"], ep["version"], "--agent", "claude"] + cmd[6:]
+    if voice:   # 2026-10-13：初稿の点検は声を回さないので、2026-10-01 の条件（声×2 を含む）と比べるときに付ける
+        cmd.append("--voice")
     with ThreadPoolExecutor(2) as pool:
         f1 = pool.submit(subprocess.run, cmd, cwd=tree, capture_output=True, text=True, encoding="utf-8")
         f2 = pool.submit(subprocess.run, rcmd, cwd=tree, capture_output=True, text=True, encoding="utf-8")
@@ -100,6 +103,7 @@ def main():
     ap.add_argument("--grade-only", action="store_true")
     ap.add_argument("--grade-files", nargs="*", help="EP020=a.md,b.md の形。その出力をつないで採点する")
     ap.add_argument("--label", default="check_all")
+    ap.add_argument("--voice", action="store_true", help="check_all に --voice を付ける（採用前の条件。2026-10-01 の結果と比べるときはこれ）")
     A.add_model_args(ap)
     a = ap.parse_args()
     truth = json.loads((A.WORK / a.truth).read_text(encoding="utf-8"))
@@ -118,7 +122,7 @@ def main():
             if report is None:
                 return name, None, f"{p} がない"
         else:
-            report, err = run_check(ep, a.model, a.effort)
+            report, err = run_check(ep, a.model, a.effort, a.voice)
             if err:
                 return name, None, err
             A.write(runs / f"{name}-check.md", report)
