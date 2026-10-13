@@ -41,7 +41,6 @@ DEFAULTS = {
     "voice_cards": "blocks/VOICE-CARDS.md",    # 人物ごとの口調
     "voice_rules": "blocks/CH-01-voice.md",    # 主人公の掟・語り方
     "owner_eye": "blocks/OWNER-EYE.md",        # オーナーの目（書いたあとの点検）
-    "owner_marks": None,                       # オーナーの場面の印の型（短い一枚。筋の点検が必須に挙げる。例 blocks/OWNER-MARKS.md。2026-10-14）
     "bad_examples": "blocks/BAD-EXAMPLES.md",  # オーナーが直した文の組
     "good_examples": "blocks/GOOD-EXAMPLES.md",
     "line_aim": None,                          # 主人公の「らしい一言」の照準の問い（例 blocks/FAN-LINE-AIM.md）
