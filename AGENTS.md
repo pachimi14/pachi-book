@@ -33,9 +33,9 @@ python ../pachi-book/scripts/pack.py EP001 V1 --check      # 点検の束 → no
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md   # 機械の点検（作品の tools/work_checks.py も読む。地の文の敬称は pachi.json narration_plain で ERROR。2026-10-14）
 python ../pachi-book/scripts/check_decisions.py EP001 V1             # 決定との照合（機械。メモの見せ場の台詞・引き・触れないこと・出る人物・知らない言葉の候補・口調の候補・場面の台詞の量。2026-10-14）
 python ../pachi-book/scripts/check_reuse.py EP001 V1                 # 再演の点検（機械。前の採用版と同じ言い回し・台帳で封印した材料。check_all が一緒に回す。2026-10-13）
-python ../pachi-book/scripts/check_all.py EP001 V1                   # 初稿の点検（機械・再演・決定の照合・筋 1 回。まとめ役の LLM なし）。対応表 notes/check-V1.md。行は提案で、入れるのはオーナーが選んだものだけ（2026-10-14）
+python ../pachi-book/scripts/check_all.py EP001 V1                   # 初稿の点検（機械・再演・決定の照合・筋 1 回・声 1 回。まとめ役の LLM なし）。対応表 notes/check-V1.md。行は提案で、入れるのはオーナーが選んだものだけ（2026-10-14）
 python ../pachi-book/scripts/check_all.py EP001 V2 --base V1         # 差分の点検（筋・人物・場面の順が変わる直しのときだけ。文脈だけ。notes/diff-V2.md）
-python ../pachi-book/scripts/check_all.py EP001 V9 --final           # 採用前の点検（機械・再演・筋 1 回・声 1 回。オーナーが行ごとに選ぶ。2026-10-14）
+python ../pachi-book/scripts/check_all.py EP001 V9 --final           # 採用前の点検（機械・再演・筋 1 回。前の話との矛盾・話の中の破綻だけ。声は回さない。2026-10-14 オーナー）
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V2.md --base episodes/EP001/V1.md   # 直しで字数が増えすぎていないか
 python ../pachi-book/scripts/check_reader.py EP001 V1                # 初見読者レビュー（採用前の最後に一回）
 python ../pachi-book/scripts/check_reader.py EP001 V1 --model claude-sonnet-5-5 --effort medium   # 二人目の読者（別モデル。盲点を変える。2026-10-13）
@@ -56,7 +56,7 @@ python ../pachi-book/scripts/interventions.py     # オーナーの介入の件�
 python ../pachi-book/scripts/backtest.py          # 点検ツールの回帰テスト（作品の research/tool-backtest/truth.json）
 ```
 
-`check_voice.py`（声の点検。AIっぽい・書きすぎ・言葉と物・数字の四つだけ、1 回）は `check_all.py --final` から呼ばれる。単独でも回せる。
+`check_voice.py`（声の点検。AIっぽい・書きすぎ・言葉と物・数字・説明の五つだけ、1 回）は初稿の `check_all.py` から呼ばれる（オーナーが読む前に直っていてほしいもの。採用前では回さない）。単独でも回せる。
 
 ## LLM の点検
 

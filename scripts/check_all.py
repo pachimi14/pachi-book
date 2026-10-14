@@ -4,7 +4,8 @@
 回すもの：
   機械（LLM なし）：check_episode.py（作品の tools/work_checks.py を含む）、check_reuse.py（再演・封印・一話の中の重なり）、check_decisions.py（決定との照合の機械版）
   筋：check_logic.py（1 回。束は RULES・カード・あらすじ・前の話・決定・本文。約 2〜3 万字）
-  声：check_voice.py（--final のときだけ 1 回。AIっぽい・書きすぎ・言葉と物・数字）
+  声：check_voice.py（初稿の点検で 1 回。AIっぽい・書きすぎ・言葉と物・数字・説明。オーナーが読む前に直っていてほしいもの。2026-10-14 オーナー）
+  採用前（--final）は機械＋筋だけ。前の話との矛盾と、話の中の破綻を見る。声は回さない（オーナーが直したあとの文に同じ目線を当てない）
 まとめ役の LLM は置かない。スクリプトが機械と筋（と声）の出力を一枚の表に並べる（notes/check-Vn.md）。
 
 表の読み方（2026-10-14 オーナー。工程 5）：必須も参考も「提案」。書き手は自動で直さない。
@@ -12,8 +13,9 @@
 機械の ERROR・［NG］・［再演］・［封印］だけは書き手が直してよい（何を直したか一覧で報告）。
 
 使い方（作品リポジトリのルートで）:
-  python ../pachi-book/scripts/check_all.py EP026 V4            # 初稿の点検（機械＋筋）
-  python ../pachi-book/scripts/check_all.py EP026 V5 --final    # 採用前の点検（機械＋筋＋声 1 回）
+  python ../pachi-book/scripts/check_all.py EP026 V4            # 初稿の点検（機械＋筋＋声。オーナーが読む前）
+  python ../pachi-book/scripts/check_all.py EP026 V5 --final    # 採用前の点検（機械＋筋。前の話との矛盾・話の中の破綻だけ）
+  python ../pachi-book/scripts/check_all.py EP026 V4 --no-voice # 初稿の点検で声を回さない
   python ../pachi-book/scripts/check_all.py EP026 V5 --base V4  # 差分の点検（場面の順・人物の配置・誰が何を知るかが変わった直しのときだけ。文脈だけ）
 廃止（2026-10-14）：--status（必須を全部埋める関門）、声 2 回、まとめ役の LLM、温度。
 """
@@ -164,7 +166,7 @@ def compose(ep, ver, mech, logic, voice, final):
             "",
             "## 必須（筋：事実・誰が何を知る・話し手・立場・指示語・人の動き・決定）", table(must, "C"),
             "", "## 必須（機械：ERROR・NG・再演・封印。書き手が直してよい）", "\n".join(f"- {l}" for l in mech_must) or "なし",
-            "", "## 参考（筋：読者が知らない言葉" + ("／声：AIっぽい・書きすぎ・言葉と物・数字" if final else "") + "）", table(ref, "R"),
+            "", "## 参考（筋：読者が知らない言葉" + ("／声：AIっぽい・書きすぎ・言葉と物・数字・説明" if voice else "") + "）", table(ref, "R"),
             "", "## 参考（機械：WARN・INFO）", "\n".join(f"- {l}" for l in mech_ref) or "なし",
             "", "## 機械の点検（元の出力）", "```", mech, "```"]
     return "\n".join(head)
@@ -175,8 +177,9 @@ def main():
     ap.add_argument("episode")
     ap.add_argument("version")
     ap.add_argument("--base", help="差分の点検：前の版（例 V21）。直したことで文脈がおかしくなっていないかだけを見る")
-    ap.add_argument("--final", action="store_true", help="採用前の点検（機械＋筋＋声 1 回）。行ごとにオーナーが選ぶ")
-    ap.add_argument("--voice", action="store_true", help="声の点検も回す（既定では --final のときだけ）")
+    ap.add_argument("--final", action="store_true", help="採用前の点検（機械＋筋。前の話との矛盾・話の中の破綻だけ。声は回さない）")
+    ap.add_argument("--voice", action="store_true", help="--final でも声の点検を回す")
+    ap.add_argument("--no-voice", action="store_true", help="初稿の点検で声の点検を回さない")
     ap.add_argument("--bad-examples", help="（廃止。互換のため残す）")
     A.add_model_args(ap)
     a = ap.parse_args()
@@ -187,7 +190,7 @@ def main():
     name = A.agents(a.agent)[0]
     mech = mechanical(ep, ver)
     jobs = [(name, check_logic.prompts(ep, ver), "logic")]
-    with_voice = a.final or a.voice
+    with_voice = (not a.final and not a.no_voice) or a.voice   # 2026-10-14：声は初稿の点検で回し、採用前では回さない
     if with_voice:
         jobs.append((name, check_voice.prompt(ep, ver), "voice"))
     got = {"voice": ""}
