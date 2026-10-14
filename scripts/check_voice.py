@@ -58,7 +58,7 @@ PROMPT = f"""あなたはこの連載の編集者です。作者の文の癖を�
 def prompt(ep, ver, bad_examples=None):
     """束（2026-10-14）：WRITE-BRIEF・RULES とカード（A.canon_context）・直前話・本文。CH-01-voice・OWNER-EYE・FAN-LINE-AIM・BAD-EXAMPLES は渡さない。"""
     return A.SEP.join([PROMPT, A.section("1. 書き手の一枚（WRITE-BRIEF）", A.doc("write_brief")),
-                       A.section("2. 決まりごと一枚と出る人物のカード", A.canon_context(ep)),
+                       A.section("2. 決まりごと一枚と出る人物のカード", A.canon_context(ep, with_knowledge=False)),
                        A.section("3. 直前の話（採用版）", A.prev_episode(ep)),
                        A.section("4. 今回の本文", A.episode_text(ep, ver))]) + "\n"
 

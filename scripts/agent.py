@@ -204,6 +204,24 @@ def cards(names=None):
     return "\n\n".join(out)
 
 
+def knowledge(names=None):
+    """人物台帳の「記録」から「- 知っていること」の箇条（とその字下げ行）だけ。前の話との矛盾を見る点検に渡す（書き手には渡さない。2026-10-14 オーナー）。"""
+    text = doc("characters")
+    out = []
+    for title, body in _split_sections(text, 2):
+        if names and not any(n in title or title.split("（")[0] in n for n in names):
+            continue
+        lines, keep, on = body.splitlines(), [], False
+        for l in lines:
+            if l.startswith("- "):
+                on = l.startswith("- 知っていること")
+            if on and (l.startswith("- ") or l.startswith("  ")):
+                keep.append(l)
+        if keep:
+            out.append(f"## {title}\n" + "\n".join(keep))
+    return "\n\n".join(out)
+
+
 def world_sections(titles):
     """canon/world.md のうち、見出しが titles のどれかで始まる節だけ。"""
     text = doc("world")
@@ -218,13 +236,16 @@ def rules():
     return doc("rules")
 
 
-def canon_context(ep=None):
-    """点検に渡す台帳（2026-10-14 組み替え）：決まりごと一枚・出る人物のカード・メモが指定する world の節。
-    台帳の記録（履歴）・LONG-ARCS・口調カード・OWNER-EYE は渡さない（73k 字の資料の中で一行の決まりが拾えなかった）。
+def canon_context(ep=None, with_knowledge=True):
+    """点検に渡す台帳（2026-10-14 組み替え）：決まりごと一枚・出る人物のカード・「知っていること」（前の話との矛盾を見るため）・メモが指定する world の節。
+    台帳の記録のそれ以外（旧状態の履歴）・LONG-ARCS・口調カード・OWNER-EYE は渡さない（73k 字の資料の中で一行の決まりが拾えなかった）。
     ep が無いとき（メモの監査など）はカードを全員分。"""
     f = memo_fields(ep) if ep else {}
+    names = f.get("出る人物")
     parts = [section("決まりごと一枚（RULES）", rules()),
-             section("台帳：出る人物のカード（呼び方・口調／今の距離と反応／使う能力）", cards(f.get("出る人物")))]
+             section("台帳：出る人物のカード（呼び方・口調／今の距離と反応／使う能力）", cards(names))]
+    if with_knowledge:
+        parts.append(section("台帳：知っていること（取得話付き。前の話との矛盾はこれと、これまでのあらすじ・前の話で見る）", knowledge(names)))
     if f.get("world"):
         parts.append(section("台帳：世界（この話に関わる節）", world_sections(f["world"])))
     return SEP.join(parts)

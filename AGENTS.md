@@ -33,7 +33,7 @@ python ../pachi-book/scripts/pack.py EP001 V1 --check      # 点検の束 → no
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md   # 機械の点検（作品の tools/work_checks.py も読む。地の文の敬称は pachi.json narration_plain で ERROR。2026-10-14）
 python ../pachi-book/scripts/check_decisions.py EP001 V1             # 決定との照合（機械。メモの見せ場の台詞・引き・触れないこと・出る人物・知らない言葉の候補・口調の候補・場面の台詞の量。2026-10-14）
 python ../pachi-book/scripts/check_reuse.py EP001 V1                 # 再演の点検（機械。前の採用版と同じ言い回し・台帳で封印した材料。check_all が一緒に回す。2026-10-13）
-python ../pachi-book/scripts/check_all.py EP001 V1                   # 初稿の点検（機械・再演・決定の照合・筋 1 回・声 1 回。まとめ役の LLM なし）。対応表 notes/check-V1.md。行は提案で、入れるのはオーナーが選んだものだけ（2026-10-14）
+python ../pachi-book/scripts/check_all.py EP001 V1                   # 初稿の点検（機械・再演・決定の照合・筋 1 回〈前の話との矛盾・話の中の破綻を含む〉・声 1 回。まとめ役の LLM なし）。対応表 notes/check-V1.md。行は提案で、入れるのはオーナーが選んだものだけ（2026-10-14）
 python ../pachi-book/scripts/check_all.py EP001 V2 --base V1         # 差分の点検（筋・人物・場面の順が変わる直しのときだけ。文脈だけ。notes/diff-V2.md）
 python ../pachi-book/scripts/check_all.py EP001 V9 --final           # 採用前の点検（機械・再演・筋 1 回。前の話との矛盾・話の中の破綻だけ。声は回さない。2026-10-14 オーナー）
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V2.md --base episodes/EP001/V1.md   # 直しで字数が増えすぎていないか
@@ -65,7 +65,7 @@ python ../pachi-book/scripts/backtest.py          # 点検ツールの回帰テ�
 - エージェントの選択：`PACHI_AGENT`（auto／claude／codex）。auto はクラウドでは claude だけ、ローカルでは claude と codex。
 - CLI が PATH にない場合は `PACHI_CLAUDE` / `PACHI_CODEX` にパスを設定する。打ち切りは `PACHI_TIMEOUT`（既定 900 秒）。
 - 作品の資料の場所（あらすじ・台帳・書き手の一枚 write_brief・材料の台帳 motifs・人物名 names・決まりごと一枚 rules）は、作品ルートの `pachi.json` で上書きできる（既定は `scripts/agent.py` の DEFAULTS）。
-- 点検に渡す台帳は、決まりごと一枚（rules）と、人物台帳の「### カード」の節（出る人物の分だけ。メモの「- 出る人物：」）と、メモの「- world：」が指す world の節だけ（`agent.canon_context(ep)`。2026-10-14）。台帳の記録（履歴）・LONG-ARCS・口調カード・OWNER-EYE・CH-01-voice は渡さない（73k 字の中で一行の決まりが拾えなかった）。作者の決定は pachi.json の `chapter_plans` に挙げたファイルだけから取る（`agent.plan_files`。glob で旧メモを拾っていた）。
+- 点検に渡す台帳は、決まりごと一枚（rules）と、人物台帳の「### カード」の節（出る人物の分だけ。メモの「- 出る人物：」）と、記録の「- 知っていること」（前の話との矛盾を見るため。書き手には渡さない）と、メモの「- world：」が指す world の節だけ（`agent.canon_context(ep)`。2026-10-14）。台帳の記録（履歴）・LONG-ARCS・口調カード・OWNER-EYE・CH-01-voice は渡さない（73k 字の中で一行の決まりが拾えなかった）。作者の決定は pachi.json の `chapter_plans` に挙げたファイルだけから取る（`agent.plan_files`。glob で旧メモを拾っていた）。
 - 点検は直す方向だけを言い、直した文は出さない（ツールの直し案がそのまま本文に入り、オーナーに消される一行を生んでいたため。2026-10-01）。
 - 対応表は「必須」（筋：事実・誰が何を知る・話し手・立場・指示語・人の動き・決定。機械：ERROR・NG・再演・封印）と「参考」（筋：読者が知らない言葉。声：AIっぽい・書きすぎ・言葉と物・数字。機械の WARN・INFO）に分ける。どの行も提案で、行ごとに「今の文／案A／案B／推奨」を付ける。入れるのはオーナーが選んだものだけ（2026-10-14 オーナー）。機械の ERROR・NG・再演・封印だけは書き手が直してよい。段落の最後の具体の評価の一文は語り手の声なので挙げない。
 - 点検側の組み替え（2026-10-13。原因の切り分け：research/process-review-2026-10-13.md §10）：
