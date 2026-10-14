@@ -144,8 +144,8 @@ def compose(ep, ver, mech, logic, voice, final):
         (must if any(k in kind for k in MUST_KINDS) else ref).append(c + ["筋"])
     for c in table_rows(voice, "V"):
         ref.append(c + ["声"])
-    mech_lines = [l for l in mech.splitlines() if l.strip()]
-    mech_must = [l for l in mech_lines if l.startswith("ERROR") or "［再演］" in l or "［封印］" in l or "［NG］" in l]
+    mech_lines = [l for l in mech.splitlines() if l.startswith(("ERROR", "WARN", "INFO"))]   # 見出し行（「再演の点検 … ［再演］0」）は入れない
+    mech_must = [l for l in mech_lines if l.startswith("ERROR") or (l.startswith("WARN") and ("［再演］" in l or "［封印］" in l or "［NG］" in l))]
     mech_ref = [l for l in mech_lines if l.startswith(("WARN", "INFO")) and l not in mech_must]
 
     def table(rows, pre):
