@@ -136,6 +136,43 @@ def motif_hits(text):
     return hits
 
 
+def memo_hits(ep, text):
+    """その話のメモの「- 検索語（使わない）：」（2026-10-14）。MOTIFS の封印と同じ扱い。"""
+    keys = A.memo_fields(ep).get("検索語（使わない）") or []
+    lines = text.splitlines()
+    hits = []
+    for key in keys:
+        where = [i for i, l in enumerate(lines, 1) if key in l]
+        if where:
+            hits.append((key, where))
+    return hits
+
+
+def self_overlaps(target_lines, k, ignore, names):
+    """一話の中で同じ言い回しが二度出る所（書きすぎの機械版。2026-10-14）。[(行番号の組, 文字列)]。"""
+    seen = {}
+    for ln, line in enumerate(target_lines, 1):
+        if not line.startswith("　"):
+            continue
+        body, _ = normalize(line)
+        for i in range(len(body) - k + 1):
+            seen.setdefault(body[i:i + k], []).append(ln)
+    found = {}
+    for run, lns in seen.items():
+        lns = sorted(set(lns))
+        if len(lns) >= 2 and not trivial(run, names, ignore):
+            found.setdefault(tuple(lns), []).append(run)
+    out = []
+    for lns, runs in found.items():
+        runs.sort(key=len, reverse=True)
+        best = []
+        for r in runs:
+            if not any(r in b for b in best):
+                best.append(r)
+        out.append((lns, best[0]))
+    return sorted(out)
+
+
 def report(ep, ver, k=8, include_later=False, path=None):
     text = Path(path).read_text(encoding="utf-8") if path else A.episode_text(ep, ver)
     target_lines = text.splitlines()
@@ -152,6 +189,11 @@ def report(ep, ver, k=8, include_later=False, path=None):
         out.append(f"WARN  {ln}行目：［再演］「{run}」（{'・'.join(sorted(eps))} の採用版にも同じ言い回し。2 回以上なら使わない〈2026-10-10 オーナー〉。働きを変えるか別の言い方に）")
     for ln, run, eps in once:
         out.append(f"INFO  {ln}行目：［既出］「{run}」（{'・'.join(sorted(eps))} に同じ言い回し。働きが同じなら外す）")
+    for key, where in memo_hits(ep, text):
+        lines = "・".join(str(w) for w in where[:5]) + ("…" if len(where) > 5 else "")
+        out.append(f"WARN  {lines}行目：［封印］「{key}」＝この話のメモの「使わないもの」。働きが同じなら外す。事実として触れるだけなら残して理由を書く")
+    for lns, run in self_overlaps(target_lines, max(k, 10), ignore, names):
+        out.append(f"INFO  {'・'.join(str(x) for x in lns)}行目：［重なり］「{run}」（この話の中で二度。同じ言い回しの繰り返しなら片方を変える）")
     for mark, name, key, state, where in motif_hits(text):
         lines = "・".join(str(w) for w in where[:5]) + ("…" if len(where) > 5 else "")
         if mark == "封印":

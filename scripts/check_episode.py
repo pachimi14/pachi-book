@@ -54,11 +54,61 @@ def work_root(episode_file):
     return Path.cwd()
 
 
-def fixed_numbers(root):
+def work_config(root):
     p = root / "pachi.json"
     if p.is_file():
-        return set(json.loads(p.read_text(encoding="utf-8")).get("fixed_numbers", []))
-    return set()
+        return json.loads(p.read_text(encoding="utf-8"))
+    return {}
+
+
+def fixed_numbers(root):
+    return set(work_config(root).get("fixed_numbers", []))
+
+
+QUOTED = re.compile(r"「[^」]*」|『[^』]*』|【[^】]*】|〈[^〉]*〉")
+HONORIFIC = re.compile(r"(さん|様|先輩|ちゃん|君)")
+
+
+def episode_id(path):
+    m = re.search(r"(EP\d{3})", str(path))
+    return m.group(1) if m else None
+
+
+def narrator_is_hero(root, path):
+    """語り手が主人公か（pachi.json の narrator_override と、メモの「- 視点：」の欄）。"""
+    ep = episode_id(path)
+    if not ep:
+        return True
+    if ep in (work_config(root).get("narrator_override") or {}):
+        return False
+    for memo in root.glob("blocks/*-memos.md"):
+        text = memo.read_text(encoding="utf-8")
+        m = re.search(rf"^#{{2,3}}\s+{ep}(?![〜~\-–\d]).*?(?=^#{{1,3}}\s|\Z)", text, re.S | re.M)
+        if m:
+            v = re.search(r"^- 視点[：:]\s*(\S+)", m.group(0), re.M)
+            if v and v.group(1) != "主人公":
+                return False
+    return True
+
+
+def honorific_checks(lines, board, root, path):
+    """地の文の敬称（2026-10-14。RULES「呼び方・口調」）。pachi.json の narration_plain に挙げた人物は、
+    地の文（「」『』【】〈〉の外、掲示板の外）で呼び捨て。「シエルさん」が V1〜V3 で五か所再発し、LLM の点検は拾わなかった。"""
+    plain = work_config(root).get("narration_plain") or []
+    if not plain or not narrator_is_hero(root, path):
+        return []
+    errors = []
+    for i, l in enumerate(lines, 1):
+        if i in board or not l.strip():
+            continue
+        head = l.strip("　 ")[:1]
+        if head in DIALOGUE_OPEN:
+            continue
+        rest = QUOTED.sub("", l)
+        for name in plain:
+            for m in re.finditer(re.escape(name) + HONORIFIC.pattern, rest):
+                errors.append(f"{i}行目：地の文の敬称「{m.group(0)}」（地の文・独り言では「{name}」。敬称は台詞の中だけ。RULES）")
+    return errors
 
 
 # 読者の反応の数字（再生数・視聴者数・登録者数など）は拾わない。避けるのは能力・場の仕組み・段取りの数字（2026-10-01 kyuketsu オーナー）
@@ -191,12 +241,12 @@ def main():
             warns.append(f"{i}行目：台詞の末尾に句点がある")
         if head in "（(":
             warns.append(f"{i}行目：（）は使わない（心の声は地の文に）")
+        if re.fullmatch(re.escape(scene_mark) + r"場面[0-9０-９]+", s):
+            continue   # 採用前の仮の場面印「◇場面N」（2026-10-13 オーナー。採用のとき本物の記号だけ残す。算用数字の WARN からも除く）
         if head not in "〈【" and re.search(r"[0-9０-９]", s):
             warns.append(f"{i}行目：算用数字（地の文・台詞は漢数字）")
         if len(s) > 120:
             warns.append(f"{i}行目：1行が{len(s)}字（120字以内）")
-        if re.fullmatch(re.escape(scene_mark) + r"場面[0-9０-９]+", s):
-            continue   # 採用前の仮の場面印「◇場面N」（2026-10-13 オーナー。採用のとき本物の記号だけ残す）
         if len(s) <= 12 and re.fullmatch(r"[^\w぀-ヿ一-鿿]+", s) and s not in ("……", "――") and not head in "「『〈【":
             if s != scene_mark:
                 warns.append(f"{i}行目：場面転換記号が「{s}」（この作品は「{scene_mark}」）")
@@ -262,6 +312,10 @@ def main():
         if grow > 0.10:
             warns.append(f"直しで字数が {grow:+.0%}（{before}→{chars}）。点検に全部応えて足しすぎていないか。オーナーの直しは前後 ±5% ほど")
     root = work_root(a.file)
+    low = work_config(root).get("min_chars") or 0
+    if low and chars < low:
+        warns.append(f"字数 {chars} が作品の下限 {low} を下回る（字数のために文を薄く足さない。足す場所と中身はオーナーに出して選んでもらう）")
+    errors += honorific_checks(lines, board, root, a.file)
     warns += prose_checks(lines, root)
     extra, summary = plugin_checks(root, a.file, lines)
     warns += extra

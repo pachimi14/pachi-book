@@ -158,7 +158,9 @@ def mechanical(ep, ver):
                        encoding="utf-8", cwd=A.WORK)
     r2 = subprocess.run([sys.executable, str(here / "check_reuse.py"), ep, ver], capture_output=True, text=True,
                         encoding="utf-8", cwd=A.WORK)   # 再演の点検（2026-10-13）
-    return (r.stdout + r.stderr).strip() + "\n\n" + (r2.stdout + r2.stderr).strip()
+    r3 = subprocess.run([sys.executable, str(here / "check_decisions.py"), ep, ver], capture_output=True, text=True,
+                        encoding="utf-8", cwd=A.WORK)   # 決定との照合（機械。2026-10-14）
+    return "\n\n".join((x.stdout + x.stderr).strip() for x in (r, r2, r3))
 
 
 READABLE_OK = ("事実", "段階")   # 「直さない」で閉じてよいのは筋の行だけ（2026-10-02 オーナー）

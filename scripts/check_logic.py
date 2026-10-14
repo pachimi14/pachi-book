@@ -93,9 +93,11 @@ PROMPT_SNIPPET = f"""あなたはこの連載の校閲者です。文体では�
 
 
 def context(ep):
+    """点検の束（2026-10-14 組み替え。research/protocol-v3-2026-10-14.md §3d）：
+    決まりごと一枚・出る人物のカード・メモが指定する world の節（A.canon_context）、前の話までのあらすじ、前の話、この話の決定。
+    主人公の掟・語り方（CH-01-voice）・オーナーの目・LONG-ARCS・台帳の記録は渡さない（73k 字で一行の決まりが拾えなかった）。"""
     n = int(ep[2:])
-    return A.SEP.join([A.section("これまでのあらすじ", A.synopsis_before(n)), A.canon_context(),
-                       A.section("主人公の掟・語り方", A.doc("voice_rules")), A.section("オーナーの目", A.doc("owner_eye")),
+    return A.SEP.join([A.section("これまでのあらすじ", A.synopsis_before(n)), A.canon_context(ep),
                        A.section("前の話", A.prev_episode(ep)),
                        A.section("この話の作者の決定（章のあらすじ・メモ）", A.episode_plan(ep))])
 

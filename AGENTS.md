@@ -26,8 +26,12 @@
 ## コマンド（作品リポジトリのルートで実行）
 
 ```bash
+# 束（2026-10-14。research/protocol-v3 §3。書き手も点検も、この束に入っているものだけを読む）
+python ../pachi-book/scripts/pack.py EP001 --writer        # 書き手の束 → notes/pack-writer.md（RULES・WRITE-BRIEF・同じ型の見本・出る人物のカード・world の節・散文とメモ・直前話・layout）
+python ../pachi-book/scripts/pack.py EP001 V1 --check      # 点検の束 → notes/pack-check-V1.md（筋・差分・採用前の点検が読むもの。台帳の記録・LONG-ARCS・OWNER-EYE は入らない）
 # 本文
-python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md   # 機械の点検（作品の tools/work_checks.py も読む）
+python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md   # 機械の点検（作品の tools/work_checks.py も読む。地の文の敬称は pachi.json narration_plain で ERROR。2026-10-14）
+python ../pachi-book/scripts/check_decisions.py EP001 V1             # 決定との照合（機械。メモの見せ場の台詞・引き・触れないこと・出る人物・知らない言葉の候補・口調の候補・場面の台詞の量。2026-10-14）
 python ../pachi-book/scripts/check_reuse.py EP001 V1                 # 再演の点検（機械。前の採用版と同じ言い回し・台帳で封印した材料。check_all が一緒に回す。2026-10-13）
 python ../pachi-book/scripts/check_all.py EP001 V1                   # 初稿の点検（機械・再演・筋。声は回らない）。対応表 notes/check-V1.md（2026-10-13）
 python ../pachi-book/scripts/check_all.py EP001 V2 --base V1         # 差分の点検（筋・人物・場面の順が変わる直しのときだけ。文脈だけ。notes/diff-V2.md）
@@ -61,7 +65,8 @@ python ../pachi-book/scripts/backtest.py          # 点検ツールの回帰テ�
 - モデルは固定する（点検のぶれにモデルの違いを混ぜない）：既定 `claude-opus-5-5`、effort `high`。変えるときは `PACHI_MODEL` / `PACHI_EFFORT` か各スクリプトの `--model` / `--effort`。
 - エージェントの選択：`PACHI_AGENT`（auto／claude／codex）。auto はクラウドでは claude だけ、ローカルでは claude と codex。
 - CLI が PATH にない場合は `PACHI_CLAUDE` / `PACHI_CODEX` にパスを設定する。打ち切りは `PACHI_TIMEOUT`（既定 900 秒）。
-- 作品の資料の場所（あらすじ・台帳・口調カード・オーナーの目・書き手の一枚 write_brief・材料の台帳 motifs・人物名 names）は、作品ルートの `pachi.json` で上書きできる（既定は `scripts/agent.py` の DEFAULTS）。
+- 作品の資料の場所（あらすじ・台帳・書き手の一枚 write_brief・材料の台帳 motifs・人物名 names・決まりごと一枚 rules）は、作品ルートの `pachi.json` で上書きできる（既定は `scripts/agent.py` の DEFAULTS）。
+- 点検に渡す台帳は、決まりごと一枚（rules）と、人物台帳の「### カード」の節（出る人物の分だけ。メモの「- 出る人物：」）と、メモの「- world：」が指す world の節だけ（`agent.canon_context(ep)`。2026-10-14）。台帳の記録（履歴）・LONG-ARCS・口調カード・OWNER-EYE・CH-01-voice は渡さない（73k 字の中で一行の決まりが拾えなかった）。作者の決定は pachi.json の `chapter_plans` に挙げたファイルだけから取る（`agent.plan_files`。glob で旧メモを拾っていた）。
 - 点検は直す方向だけを言い、直した文は出さない（ツールの直し案がそのまま本文に入り、オーナーに消される一行を生んでいたため。2026-10-01）。
 - 対応表は「必須」（筋と事実だけ。2026-10-13）と「参考」（AIっぽい・照準・仕組み・文体）に分ける。参考は書き手が選び、削るだけで対応しない。AIっぽい文は「抽象のまとめ」だけで、段落の最後の具体の評価の一文は語り手の声なので残す。全部に従うと本文が長くなり、オーナーの直しから離れる（2026-10-01 の実験）。
 - 点検側の組み替え（2026-10-13。原因の切り分け：research/process-review-2026-10-13.md §10）：

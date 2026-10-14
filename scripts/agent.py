@@ -49,6 +49,13 @@ DEFAULTS = {
     "names": [],                               # 人物名（再演の点検で、名前だけの重なりを除く）
     "reuse_ignore": [],                        # 再演の点検で出さない言い回し
     "fixed_numbers": [],
+    "rules": None,                             # 決まりごと一枚（例 blocks/RULES.md。書き手と点検に毎回渡す。2026-10-14）
+    "card_heading": "### カード",              # 人物台帳の、書き手と点検に渡す節の見出し（その下から次の ### か ## まで）
+    "narration_plain": [],                     # 地の文では呼び捨てにする人物名（check_episode が「名前＋さん」を ERROR にする）
+    "narrator_override": {},                   # 語り手が主人公でない話 {"EP023": "ツグミ"}（地の文の敬称の点検を飛ばす）
+    "type_samples": {},                        # 場面の型 → 見本の話 {"日常・会話": "EP007", "現場": "EP005", "配信": "EP009"}
+    "min_chars": 0,                            # 一話の字数の下限（check_episode が WARN）
+    "must_say": {},                            # 台詞に必ず出る語 {"大学時代の友人": ["私"]}（check_decisions が INFO）
     "market": [],                              # 市場の調べ（ストーリーテラーが読む）
     "goal": "",                                # 作品の目標（例：公開から1か月で★1000）
     "schedule": None,                          # 公開の予定 {"start": "YYYY-MM-DD", "first_day": 8, "per_day": 2}                       # 台帳で決まっている数字（数字の検出から除く。例 "十年"）
@@ -109,17 +116,35 @@ def _ep_sections(text, ep):
     return out
 
 
+def plan_files():
+    """作者の決定が書いてあるファイル。pachi.json の chapter_plans（並び順どおり。今の計画だけを挙げる）があればそれだけ、
+    無ければ chapters/CH-*-STORY.md と blocks/*-memos.md の全部。
+    2026-10-14：EP025〜026 の点検は、glob に当たらない今の散文（CH-01-END-2026-10-13.md）を渡さず、
+    「点検には使わない」と書いてある旧メモ（CH-01-E-memos.md）を渡していた。chapter_plans を正にする。"""
+    cfg = config().get("chapter_plans") or []
+    if cfg:
+        return [WORK / p for p in cfg if (WORK / p).is_file()]
+    return sorted(WORK.glob("chapters/CH-*-STORY.md")) + sorted(WORK.glob("blocks/*-memos.md"))
+
+
+def memo_files():
+    return [p for p in plan_files() if p.name.endswith("-memos.md")]
+
+
 def episode_plan(ep):
-    """その話の作者の決定：章のあらすじ（chapters/CH-*-STORY.md）の節と、ブロックのメモ（blocks/*-memos.md）の節。
+    """その話の作者の決定：章のあらすじ（散文）の節と、ブロックのメモの節（plan_files の順）。
+    見出しに【旧 が付く節は渡さない。
 
     2026-10-02：筋の点検にこれを渡していなかったため、点検役が決めた筋を知らずに「直す」を出し、
     直し案がそれに合わせて筋から外れていった（EP023）。メモは、確定したあらすじを場面に分けたもの。
     """
     parts = []
-    for pattern, title in (("chapters/CH-*-STORY.md", "章のあらすじ"), ("blocks/*-memos.md", "メモ")):
-        for p in sorted(WORK.glob(pattern)):
-            for s in _ep_sections(p.read_text(encoding="utf-8"), ep):
-                parts.append(f"## {title}（{p.relative_to(WORK).as_posix()}）\n\n{s}")
+    for p in plan_files():
+        title = "メモ" if p.name.endswith("-memos.md") else "章のあらすじ（散文）"
+        for s in _ep_sections(p.read_text(encoding="utf-8"), ep):
+            if "【旧" in s.splitlines()[0]:
+                continue
+            parts.append(f"## {title}（{p.relative_to(WORK).as_posix()}）\n\n{s}")
     return "\n\n".join(parts)
 
 
@@ -127,10 +152,82 @@ def section(title, body):
     return f"# {title}\n\n{body or '（なし）'}"
 
 
-def canon_context():
-    return SEP.join([section("台帳：登場人物", doc("characters")), section("台帳：世界", doc("world")),
-                     section("台帳：能力", doc("abilities")), section("長期の骨格（作者用）", doc("long_arcs")),
-                     section("口調カード", doc("voice_cards"))])
+FIELD = re.compile(r"^- (視点|型|出る人物|world|検索語（触れない）|検索語（使わない）)[：:]\s*(.*)$")
+
+
+def memo_fields(ep):
+    """その話のメモの機械が読む欄（2026-10-14）：視点・型・出る人物・world・検索語（触れない）・検索語（使わない）。
+    値は「／」区切りを list に（視点・型は str）。無い欄は入っていない。"""
+    out = {}
+    for p in memo_files():
+        for sec in _ep_sections(p.read_text(encoding="utf-8"), ep):
+            if "【旧" in sec.splitlines()[0]:
+                continue
+            for l in sec.splitlines():
+                m = FIELD.match(l.strip() if not l.startswith("  ") else "")
+                if not m:
+                    continue
+                key, val = m.group(1), m.group(2).strip()
+                if key in ("視点", "型"):
+                    out[key] = val
+                else:
+                    out[key] = [v.strip() for v in re.split(r"[／/]", val) if v.strip()]
+    return out
+
+
+def _split_sections(text, level):
+    """見出し（level 個の #）で切る。[(見出しの文, 本文)]。"""
+    pat = re.compile(rf"^#{{{level}}}\s+(.+)$", re.M)
+    heads = list(pat.finditer(text))
+    out = []
+    for i, m in enumerate(heads):
+        end = heads[i + 1].start() if i + 1 < len(heads) else len(text)
+        out.append((m.group(1).strip(), text[m.end():end]))
+    return out
+
+
+def cards(names=None):
+    """人物台帳の「カード」（card_heading の節）だけ。names（出る人物）があればその人物だけ、無ければ全員。
+    人物の名前は見出しの先頭と照らす（「友人」は「大学時代の友人（名前未定）」に当たる）。2026-10-14。"""
+    text = doc("characters")
+    head = config().get("card_heading") or "### カード"
+    out = []
+    for title, body in _split_sections(text, 2):
+        if names and not any(n in title or title.split("（")[0] in n for n in names):
+            continue
+        m = re.search(re.escape(head) + r"[^\n]*\n(.*?)(?=\n### |\Z)", body, re.S)
+        if not m:
+            continue
+        card = m.group(1).strip()
+        if card:
+            out.append(f"## {title}\n{card}")
+    return "\n\n".join(out)
+
+
+def world_sections(titles):
+    """canon/world.md のうち、見出しが titles のどれかで始まる節だけ。"""
+    text = doc("world")
+    out = []
+    for title, body in _split_sections(text, 2):
+        if any(title.startswith(t) for t in titles):
+            out.append(f"## {title}\n{body.strip()}")
+    return "\n\n".join(out)
+
+
+def rules():
+    return doc("rules")
+
+
+def canon_context(ep=None):
+    """点検に渡す台帳（2026-10-14 組み替え）：決まりごと一枚・出る人物のカード・メモが指定する world の節。
+    台帳の記録（履歴）・LONG-ARCS・口調カード・OWNER-EYE は渡さない（73k 字の資料の中で一行の決まりが拾えなかった）。
+    ep が無いとき（メモの監査など）はカードを全員分。"""
+    f = memo_fields(ep) if ep else {}
+    parts = [section("決まりごと一枚（RULES）", rules()),
+             section("台帳：出る人物のカード（呼び方・口調／今の距離と反応／使う能力）", cards(f.get("出る人物")))]
+    if f.get("world"):
+        parts.append(section("台帳：世界（この話に関わる節）", world_sections(f["world"])))
+    return SEP.join(parts)
 
 
 # ---- CLI の実行 ----
