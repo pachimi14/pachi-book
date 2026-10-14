@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""直し案の点検と記録（改稿用。2026-10-01）。
+"""直し案の点検と記録（改稿用。2026-10-01。2026-10-14：既定は機械の点検だけ。LLM の筋の差し込み点検は --logic、好みの判定は --taste）。
 
 オーナーに見せる直し案（一行の直しも、A／B の二択も）は、チャットで考えたまま出さない。
 ここで本文に差し込んだ形にして、筋の点検（check_logic と同じ問い）と機械の点検（check_episode）を通し、
@@ -77,7 +77,8 @@ def warns(path, base=None):
     return [l for l in out if l.startswith(("WARN", "ERROR"))], [l[l.index("字数"):] for l in out if "字数" in l]
 
 
-def check(ep, ver, cands):
+def check(ep, ver, cands, logic=False):
+    """案ごとに機械の点検（check_episode の、直したことで新しく出た警告）。LLM の筋の差し込み点検は --logic のときだけ（2026-10-14）。"""
     base = A.WORK / "episodes" / ep / f"{ver}.md"
     text = base.read_text(encoding="utf-8")
     base_w = {LINE_NO.sub("WARN ", w) for w in warns(base)[0]}
@@ -88,9 +89,12 @@ def check(ep, ver, cands):
         w, size = warns(tmp, base)
         mech[key] = ([x for x in w if LINE_NO.sub("WARN ", x) not in base_w], size)
         tmp.unlink()
-        prompt = (f"{check_logic.PROMPT_SNIPPET}{A.SEP}{check_logic.context(ep)}{A.SEP}"
-                  f"# 直したあとの本文\n\n{patch(text, pairs, mark=True)}\n")
-        jobs.append((A.agents()[0], prompt, key))
+        if logic:
+            prompt = (f"{check_logic.PROMPT_SNIPPET}{A.SEP}{check_logic.context(ep)}{A.SEP}"
+                      f"# 直したあとの本文\n\n{patch(text, pairs, mark=True)}\n")
+            jobs.append((A.agents()[0], prompt, key))
+    if not logic:
+        return mech, {key: ("（筋の点検は回していない。機械だけ。2026-10-14）", None) for key in cands}
     return mech, {key: (t, e) for key, t, e in A.run_many(jobs)}
 
 
@@ -128,7 +132,9 @@ def main():
     ap.add_argument("--to", help="--apply で作る新しい版（例 V8）")
     ap.add_argument("--owner-wrote", help="オーナーが自分で書いた文のファイル（案は全部選ばれなかったとして記録）")
     ap.add_argument("--batch", help="--owner-wrote のとき、比べた案の組（P<日時>）")
-    ap.add_argument("--no-taste", action="store_true", help="好みの判定を回さない")
+    ap.add_argument("--no-taste", action="store_true", help="（既定で回さない。互換のため残す）")
+    ap.add_argument("--taste", action="store_true", help="好みの判定（taste.py）を回す。既定では回さない（2026-10-14）")
+    ap.add_argument("--logic", action="store_true", help="案ごとに LLM の筋の差し込み点検を回す。既定では機械だけ（2026-10-14）")
     a = ap.parse_args()
     ep, ver = a.episode, a.version
     store = A.notes_dir(ep) / "proposals.json"
@@ -166,7 +172,7 @@ def main():
                 record_choice(ep, key, cand_text(rec["pairs"]), sibs, db, weak=not a.strong)
             who = "書き手が好みの判定で" if a.by_writer else "オーナーの選択で"
             print(f"{dst.relative_to(A.WORK)} に {key} を入れた（{who}。筋の点検：{rec['verdict']}" + (f"／好み：{rec['taste']:g}勝" if rec.get("taste") is not None else "") + "）")
-            if rec["verdict"] != "通る":
+            if rec["verdict"] not in ("通る", "機械のみ"):
                 print(f"  注意：筋の点検で「{rec['verdict']}」だった案。理由を proposals.md で確かめる")
         print("\n".join(size + w[:10]))
         return
@@ -180,18 +186,18 @@ def main():
     stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M")
     keys = [f"P{stamp}-{chr(65 + i)}" for i in range(len(cands_list))]
     cands = dict(zip(keys, cands_list))
-    mech, logic = check(ep, ver, cands)
+    mech, logic = check(ep, ver, cands, a.logic)
     base_text = (A.WORK / "episodes" / ep / f"{ver}.md").read_text(encoding="utf-8")
     first_old = cands_list[0][0][0]
     pre = base_text[:base_text.index(first_old)].rstrip("\n").split("\n")
     context = "\n".join(x for x in pre[-3:] if x.strip())
     wins, stable, terr = ({}, 0, None)
-    if len(cands) >= 2 and not a.no_taste:
+    if len(cands) >= 2 and a.taste:
         wins, stable, terr = taste.judge(context, {k: cand_text(v) for k, v in cands.items()})
     lines = [f"\n## {stamp} {ep} {ver}：{a.issue or '（指摘の要約なし）'}\n"]
     for key, pairs in cands.items():
         text, err = logic[key]
-        v = "失敗" if err else verdict(text)
+        v = "失敗" if err else ("機械のみ" if not a.logic else verdict(text))
         db[key] = {"version": ver, "issue": a.issue, "pairs": pairs, "verdict": v,
                    "new_warns": mech[key][0], "context": context, "taste": wins.get(key)}
         tj = f"／好み：{wins[key]:g}勝" if key in wins else ""

@@ -33,21 +33,20 @@ python ../pachi-book/scripts/pack.py EP001 V1 --check      # 点検の束 → no
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V1.md   # 機械の点検（作品の tools/work_checks.py も読む。地の文の敬称は pachi.json narration_plain で ERROR。2026-10-14）
 python ../pachi-book/scripts/check_decisions.py EP001 V1             # 決定との照合（機械。メモの見せ場の台詞・引き・触れないこと・出る人物・知らない言葉の候補・口調の候補・場面の台詞の量。2026-10-14）
 python ../pachi-book/scripts/check_reuse.py EP001 V1                 # 再演の点検（機械。前の採用版と同じ言い回し・台帳で封印した材料。check_all が一緒に回す。2026-10-13）
-python ../pachi-book/scripts/check_all.py EP001 V1                   # 初稿の点検（機械・再演・筋。声は回らない）。対応表 notes/check-V1.md（2026-10-13）
+python ../pachi-book/scripts/check_all.py EP001 V1                   # 初稿の点検（機械・再演・決定の照合・筋 1 回。まとめ役の LLM なし）。対応表 notes/check-V1.md。行は提案で、入れるのはオーナーが選んだものだけ（2026-10-14）
 python ../pachi-book/scripts/check_all.py EP001 V2 --base V1         # 差分の点検（筋・人物・場面の順が変わる直しのときだけ。文脈だけ。notes/diff-V2.md）
-python ../pachi-book/scripts/check_all.py EP001 V9 --final           # 採用前の全文の点検（機械・再演・筋・声。直すか行ごとに選ぶ）
-python ../pachi-book/scripts/check_all.py EP001 V1 --status          # 必須の対応が空の行（0 になるまで埋める）
+python ../pachi-book/scripts/check_all.py EP001 V9 --final           # 採用前の点検（機械・再演・筋 1 回・声 1 回。オーナーが行ごとに選ぶ。2026-10-14）
 python ../pachi-book/scripts/check_episode.py episodes/EP001/V2.md --base episodes/EP001/V1.md   # 直しで字数が増えすぎていないか
 python ../pachi-book/scripts/check_reader.py EP001 V1                # 初見読者レビュー（採用前の最後に一回）
 python ../pachi-book/scripts/check_reader.py EP001 V1 --model claude-sonnet-5-5 --effort medium   # 二人目の読者（別モデル。盲点を変える。2026-10-13）
-python ../pachi-book/scripts/propose.py EP001 V1 --issue "指摘" --cand 案A.txt --cand 案B.txt   # 直し案の点検と番号（P…）。オーナーに見せる案は必ずこれを通す
+python ../pachi-book/scripts/propose.py EP001 V1 --issue "指摘" --cand 案A.txt --cand 案B.txt   # 直し案の機械の点検と番号（P…）。LLM の筋の差し込み点検は --logic、好みの判定は --taste（既定は機械だけ。2026-10-14）
 python ../pachi-book/scripts/propose.py EP001 V1 --apply P…-A --to V2   # 選ばれた案を、点検した文のまま新しい版に入れる（選択は好みの材料に記録）
 python ../pachi-book/scripts/taste.py build|eval   # オーナーの好みの判定役：材料を作る／伏せた組で当たりを測る
 python ../pachi-book/scripts/fun_judge.py pitch <一行の案> | scenes EP001 V1 | draft EP001 V1 V2   # 面白さの判定役の試験：オーナーの印の前に判定を記録（2026-10-13）
 python ../pachi-book/scripts/fun_judge.py score pitch <一行の案> | score scenes EP001 V1 | score draft EP001 --owner V2   # 印が付いたら当たりを出す
 # 方向・あらすじ・メモ
 python ../pachi-book/scripts/story_direction.py --target "第3章"   # ストーリーテラー：市場の実績と作品の流れから、次の章の方向の案（chapters/DIRECTION-日付.md）
-python ../pachi-book/scripts/check_memo.py chapters/CH-01-STORY.md    # 章のあらすじの監査（通し読み・二択・現場）
+python ../pachi-book/scripts/check_memo.py chapters/CH-01-STORY.md    # あらすじ・メモの監査（1 回。食い違い・誰が何を知るか・受け渡し・二択だけ。市場の型は --market。2026-10-14）
 python ../pachi-book/scripts/check_memo.py blocks/CH-01-A-memos.md   # 各話のメモの監査
 python ../pachi-book/scripts/check_memo.py <採用した話のメモ> <あとのメモ> --after EP001   # 採用後の波及の監査
 # 記録・測定
@@ -57,7 +56,7 @@ python ../pachi-book/scripts/interventions.py     # オーナーの介入の件�
 python ../pachi-book/scripts/backtest.py          # 点検ツールの回帰テスト（作品の research/tool-backtest/truth.json）
 ```
 
-`check_voice.py`（声の点検）は `check_all.py` から呼ばれる。単独でも回せる。
+`check_voice.py`（声の点検。AIっぽい・書きすぎ・言葉と物・数字の四つだけ、1 回）は `check_all.py --final` から呼ばれる。単独でも回せる。
 
 ## LLM の点検
 
@@ -68,7 +67,7 @@ python ../pachi-book/scripts/backtest.py          # 点検ツールの回帰テ�
 - 作品の資料の場所（あらすじ・台帳・書き手の一枚 write_brief・材料の台帳 motifs・人物名 names・決まりごと一枚 rules）は、作品ルートの `pachi.json` で上書きできる（既定は `scripts/agent.py` の DEFAULTS）。
 - 点検に渡す台帳は、決まりごと一枚（rules）と、人物台帳の「### カード」の節（出る人物の分だけ。メモの「- 出る人物：」）と、メモの「- world：」が指す world の節だけ（`agent.canon_context(ep)`。2026-10-14）。台帳の記録（履歴）・LONG-ARCS・口調カード・OWNER-EYE・CH-01-voice は渡さない（73k 字の中で一行の決まりが拾えなかった）。作者の決定は pachi.json の `chapter_plans` に挙げたファイルだけから取る（`agent.plan_files`。glob で旧メモを拾っていた）。
 - 点検は直す方向だけを言い、直した文は出さない（ツールの直し案がそのまま本文に入り、オーナーに消される一行を生んでいたため。2026-10-01）。
-- 対応表は「必須」（筋と事実だけ。2026-10-13）と「参考」（AIっぽい・照準・仕組み・文体）に分ける。参考は書き手が選び、削るだけで対応しない。AIっぽい文は「抽象のまとめ」だけで、段落の最後の具体の評価の一文は語り手の声なので残す。全部に従うと本文が長くなり、オーナーの直しから離れる（2026-10-01 の実験）。
+- 対応表は「必須」（筋：事実・誰が何を知る・話し手・立場・指示語・人の動き・決定。機械：ERROR・NG・再演・封印）と「参考」（筋：読者が知らない言葉。声：AIっぽい・書きすぎ・言葉と物・数字。機械の WARN・INFO）に分ける。どの行も提案で、行ごとに「今の文／案A／案B／推奨」を付ける。入れるのはオーナーが選んだものだけ（2026-10-14 オーナー）。機械の ERROR・NG・再演・封印だけは書き手が直してよい。段落の最後の具体の評価の一文は語り手の声なので挙げない。
 - 点検側の組み替え（2026-10-13。原因の切り分け：research/process-review-2026-10-13.md §10）：
   - 点検は「間違いを見つける係」で、面白さは見ない（面白さは一行の案と場面の ○△×）。拾えない種類（現場の細部 C・足りない所 F）は点検で追わず、状況の棚と場面単位の判断で上流に置く。
   - 「くどい」「第1章と同じ反応」は LLM に見えない（渡すのは直前の一話だけ）ので、機械 `check_reuse.py` が前の採用版との重なりと台帳の封印を数える。［再演］［封印］は必須。
