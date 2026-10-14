@@ -125,21 +125,30 @@ def _cells(line):
 
 
 def table_rows(text, prefix):
-    """LLM の出力から表の行（| L01 | … |）を拾う。[cells]。列が足りない行は埋める。"""
+    """LLM の出力から表の行（| L01 | … |）を拾う。[cells]。列：ID 場所 種類 何が 今の文 案A 案B 推奨 重要度。足りない列は埋める。"""
     rows = []
     for l in (text or "").splitlines():
         m = ROW.match(l)
         if not m or not m.group(1).startswith(prefix):
             continue
         c = _cells(l)
-        while len(c) < 8:
+        while len(c) < 9:
             c.append("")
-        rows.append(c[:8])
+        rows.append(c[:9])
     return rows
 
 
+RANK = {"高": 0, "中": 1, "低": 2}
+
+
+def rank(c):
+    r = c[8].strip()[:1]
+    return RANK.get(r, 1)
+
+
 def compose(ep, ver, mech, logic, voice, final):
-    """機械・筋・声の出力を一枚の対応表に（LLM のまとめ役なし。2026-10-14）。"""
+    """機械・筋・声の出力を一枚の対応表に（LLM のまとめ役なし。2026-10-14）。
+    先頭に「オーナーへの報告」：全部の指摘を重要度順に並べ、書き手が「直す／どう直す／そのままでよい（理由）」を埋めてチャットに出す（2026-10-14 オーナー）。"""
     must, ref = [], []
     for c in table_rows(logic, "L"):
         kind = c[2]
@@ -149,24 +158,40 @@ def compose(ep, ver, mech, logic, voice, final):
     mech_lines = [l for l in mech.splitlines() if l.startswith(("ERROR", "WARN", "INFO"))]   # 見出し行（「再演の点検 … ［再演］0」）は入れない
     mech_must = [l for l in mech_lines if l.startswith("ERROR") or (l.startswith("WARN") and ("［再演］" in l or "［封印］" in l or "［NG］" in l))]
     mech_ref = [l for l in mech_lines if l.startswith(("WARN", "INFO")) and l not in mech_must]
+    for i, c in enumerate(must, 1):
+        c.insert(0, f"C{i:02d}")
+    for i, c in enumerate(ref, 1):
+        c.insert(0, f"R{i:02d}")
+    # c = [新ID, 旧ID, 場所, 種類, 何が, 今の文, 案A, 案B, 推奨, 重要度, 出どころ]
 
-    def table(rows, pre):
-        out = ["| ID | 場所（本文を短く引用） | 種類 | 何がおかしいか | 今の文 | 案A | 案B | 推奨 | 出どころ | オーナーの選択 |",
-               "|---|---|---|---|---|---|---|---|---|---|"]
-        for i, c in enumerate(rows, 1):
-            out.append(f"| {pre}{i:02d} | " + " | ".join(c[1:9]) + " | 未 |")
+    def table(rows):
+        out = ["| ID | 場所（本文を短く引用） | 種類 | 何がおかしいか | 今の文 | 案A | 案B | 推奨 | 重要度 | 出どころ | オーナーの選択 |",
+               "|---|---|---|---|---|---|---|---|---|---|---|"]
+        for c in rows:
+            out.append(f"| {c[0]} | " + " | ".join(c[2:11]) + " | 未 |")
         return "\n".join(out) if rows else "なし"
 
+    ranked = sorted(must, key=lambda c: (rank(c[1:]), int(c[0][1:]))) + sorted(ref, key=lambda c: (rank(c[1:]), int(c[0][1:])))
+    report = ["## オーナーへの報告（重要度順。書き手が各行の「書き手の判断」を埋めてチャットに貼る。本文で今何が成立しているか、補足で何を失うかを確かめてから書く）", ""]
+    k = 0
+    for l in mech_must:
+        k += 1
+        report.append(f"{k}. ［高・機械］{l}\n   書き手の判断：直す（機械の ERROR・NG・再演・封印は書き手が直してよい）")
+    for c in ranked:
+        k += 1
+        lvl = c[9].strip() or "中"
+        report.append(f"{k}. ［{lvl}・{c[10]}］{c[0]} {c[3]}：{c[2]}\n   何が：{c[4]}\n   推奨：{c[8]}（案A {c[6]}／案B {c[7]}）\n   書き手の判断：（直す：案Aで／直す：別の形で「…」／そのままでよい：理由）")
+    if k == 0:
+        report.append("なし")
     head = [f"# 点検の対応表 {ep} {ver}" + ("（採用前の点検）" if final else "（初稿の点検）"),
             "",
-            "読み方（2026-10-14 オーナー。工程 5）：どの行も提案。書き手は自動で直さない。行ごとの「今の文／案A／案B／推奨」をチャットで出し、"
-            "オーナーが選んだものだけを次の版に入れる（「オーナーの選択」の欄に A／B／直さない を写す）。"
-            "指摘を読むときは、本文で今何が成立しているか、補足によって何を失うかを確かめてから選ぶ。",
+            "読み方（2026-10-14 オーナー。工程 5）：どの行も提案。書き手は自動で直さない。重要度順の「オーナーへの報告」に書き手の判断を埋めてチャットに出し、"
+            "オーナーが選んだものだけを次の版に入れる（「オーナーの選択」の欄に A／B／直さない を写す）。",
             "機械の ERROR・［NG］・［再演］・［封印］だけは書き手が直してよい（何を直したか一覧で報告）。",
-            "",
-            "## 必須（筋：事実・誰が何を知る・話し手・立場・指示語・人の動き・決定）", table(must, "C"),
+            "", *report, "",
+            "## 必須（筋：事実・誰が何を知る・話し手・立場・指示語・人の動き・決定）", table(must),
             "", "## 必須（機械：ERROR・NG・再演・封印。書き手が直してよい）", "\n".join(f"- {l}" for l in mech_must) or "なし",
-            "", "## 参考（筋：読者が知らない言葉" + ("／声：AIっぽい・書きすぎ・言葉と物・数字・説明" if voice else "") + "）", table(ref, "R"),
+            "", "## 参考（筋：読者が知らない言葉" + ("／声：AIっぽい・書きすぎ・言葉と物・数字・説明" if voice else "") + "）", table(ref),
             "", "## 参考（機械：WARN・INFO）", "\n".join(f"- {l}" for l in mech_ref) or "なし",
             "", "## 機械の点検（元の出力）", "```", mech, "```"]
     return "\n".join(head)
@@ -207,7 +232,7 @@ def main():
     print(A.write(out, rows))
     n_must = sum(1 for l in rows.splitlines() if re.match(r"\|\s*C\d+", l))
     n_ref = sum(1 for l in rows.splitlines() if re.match(r"\|\s*R\d+", l))
-    print(f"必須（筋）{n_must}・参考 {n_ref}。案はチャットでオーナーに出し、選ばれたものだけ入れる。")
+    print(f"必須（筋）{n_must}・参考 {n_ref}。先頭の「オーナーへの報告」（重要度順）に書き手の判断を埋めて、チャットでオーナーに出す。入れるのは選ばれたものだけ。")
 
 
 if __name__ == "__main__":
