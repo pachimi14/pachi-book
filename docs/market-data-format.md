@@ -6,14 +6,14 @@
 ## ファイル
 | ファイル | 単位 | 中身 |
 |---|---|---|
-| `works.jsonl` | 作品 1 行 | id・題名・組・タグ・公開日・★・話数／階層（章の表。ブロックは null）／市場の系列（★を話数に写した表、PV の写真の日、限界）／9/14→10/1 の伸び／作品ごとのまとめ（work.md のパス）／印を付けた話数 |
+| `works.jsonl` | 作品 1 行 | id・題名・組・タグ・公開日・★・話数／階層（章の表と推定ブロック）／市場の系列（★を話数に写した表、PV の写真の日、限界）／9/14→10/1 の伸び／作品ごとのまとめ（work.md のパス）／印を付けた話数 |
 | `episodes.jsonl` | 話 1 行 | 下の 8 項目 |
 | `fun-types.md` | 一覧 | 面白さの型（名前・定義・例・位置・組の差・本作での使用） |
 | `../TRACK.md`・`../STATS.md`（任意） | 表 | 人が読む用の集計。②③は jsonl を読む |
 
 ## episodes.jsonl の 1 行
 ```
-position        {n, title, chapter{index,title,range}, block(null)}          … 1. 階層
+position        {n, title, chapter{index,title,range}, windows{w3,w4,w5}, block_inferred{index,range,kind,expectation,reward,state_change,boundary_confidence,boundary_reason}} … 1. 階層
 before          {lines[{line, from}], carried_from_previous{lines[...]}}      … 2. 展開前の状態（その話で動いた線の「前の段」と、前の話の after）
 event           {type, summary, event, hero_act}                               … 3. 起きた出来事（型：事件／日常・会話／外の反応／回想・設定／山場）
 reward          {fun, types(null), hook{type,text}, reaction{present,role}, slice_of_life} … 4. 読者報酬
@@ -28,7 +28,7 @@ pending         [まだ無い項目の名前]
 ## 取得済み／未取得（2026-10-16 時点）
 | 項目 | 状態 | 備考 |
 |---|---|---|
-| 1. 階層 | 章まで取得済み。ブロックは未定義 | 章は目次から。ブロックは型の並びから機械で切る案と、章の表から取る案がある。②で単位が決まってから |
+| 1. 階層 | 章・固定窓は取得済み。推定ブロックは market_blocks.py で付ける（進行中） | 章は目次から。固定窓（3・4・5 話）は統計用で機械。物語上のまとまりは印から推定し、境界ごとに信頼度（高／中／低）と根拠を持つ。4 話で切ったものを正式なブロックとは呼ばない（2026-10-16 オーナー） |
 | 2. 展開前の状態 | 一部 | 動いた線の「前の段」と、前の話の after。話の頭の全人物の状態は 5 話ごとの state.json にしか無い |
 | 3. 起きた出来事 | 取得済み | 型・要約・事件・主人公が自分からすること |
 | 4. 読者報酬 | 一行は取得済み。型の番号は未 | fun の一行を面白さの型に当てる追加の分析（LLM 一回。一覧が確定してから） |
@@ -41,4 +41,4 @@ pending         [まだ無い項目の名前]
 1. 残り 20 作の収集と印付け、作品ごとのまとめ（進行中）。
 2. 面白さの型の一覧を全作で作り直し、fun の一行に型の番号を付ける（reward.types）。
 3. delivery.kind と relation_to_prior.callbacks を付ける二回目の印付け（必要なら。費用は一回目の半分）。
-4. ブロックの単位は ② の設計に合わせて切る。
+4. 推定ブロック（market_blocks.py）を全作に付ける。制作上のブロック（3〜5 話で短期の期待を作り、報酬を届け、次の状態へ移る単位）は ② の定義。①はその観測だけを渡す。

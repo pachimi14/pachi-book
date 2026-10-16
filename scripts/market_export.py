@@ -16,7 +16,7 @@ from pathlib import Path
 PENDING_EPISODE = ["reward.types（面白さの型の番号。fun の一行を型に当てる追加の分析）",
                    "delivery.kind（報酬の実現方法の分類：場面／反応／描写。shown_by と reaction.role から後で付ける）",
                    "relation_to_prior.callbacks（既出展開との関係。再演（repeat）以外はまだ無い）",
-                   "position.block（ブロックは未定義。型の並びから機械で切るか、章の表から取る）"]
+                   "position.block_inferred（market_blocks.py がまだ回っていない作品では null）"]
 
 
 def load_jsonl(p):
@@ -28,6 +28,19 @@ def chapter_of(meta, n):
         eps = c.get("episodes") or []
         if eps and eps[0] <= n <= eps[-1]:
             return {"index": i, "title": c.get("title") or None, "range": [eps[0], eps[-1]]}
+    return None
+
+
+def block_of(blocks, n):
+    """推定ブロック（market_blocks.py）。境界の信頼度を持つ。無ければ null。"""
+    for i, b in enumerate(blocks or [], 1):
+        try:
+            if int(b["start"]) <= n <= int(b["end"]):
+                return {"index": i, "range": [int(b["start"]), int(b["end"])], "kind": b.get("kind"),
+                        "expectation": b.get("expectation"), "reward": b.get("reward"), "state_change": b.get("state_change"),
+                        "boundary_confidence": b.get("boundary_confidence"), "boundary_reason": b.get("boundary_reason")}
+        except (KeyError, TypeError, ValueError):
+            continue
     return None
 
 
@@ -53,10 +66,12 @@ def export_work(wid, corpus_dir, label_dir, groups, own=False):
     meta = json.loads((corpus_dir / "meta.json").read_text(encoding="utf-8"))
     track = json.loads((corpus_dir / "track.json").read_text(encoding="utf-8")) if (corpus_dir / "track.json").is_file() else None
     labels = sorted((r for r in load_jsonl(label_dir / "labels.jsonl") if str(r.get("n", "")).isdigit()), key=lambda r: int(r["n"]))
+    blocks = json.loads((label_dir / "blocks.json").read_text(encoding="utf-8")) if (label_dir / "blocks.json").is_file() else None
     g = "本作" if own else (groups.get(wid) or {}).get("group")
     work = {"id": wid, "title": meta.get("title"), "group": g, "tags": meta.get("tags"), "published_at": meta.get("publishedAt"),
             "stars": meta.get("totalReviewPoint"), "episode_count": meta.get("publicEpisodeCount"),
-            "hierarchy": {"chapters": meta.get("chapters"), "blocks": None},
+            "hierarchy": {"chapters": meta.get("chapters"), "blocks_inferred": blocks,
+                          "note": "blocks_inferred は印からの推定（境界に信頼度）。固定窓は episodes.position.windows。4 話で切ったものを正式なブロックとは呼ばない"},
             "market": ({"daily_points": len(track.get("daily") or {}), "episode_stars": track.get("episode_stars"),
                         "pv_snapshot_date": (track.get("detail") or {}).get("date"),
                         "limits": ["ランキングに載った日だけ", "話ごとの PV は一回の写真", "因果は未検証"]} if track else None),
@@ -75,7 +90,9 @@ def export_work(wid, corpus_dir, label_dir, groups, own=False):
         rp = r.get("reaction")
         eps.append({
             "work_id": wid, "group": g,
-            "position": {"n": n, "title": r.get("title"), "chapter": chapter_of(meta, n), "block": None},
+            "position": {"n": n, "title": r.get("title"), "chapter": chapter_of(meta, n),
+                         "windows": {"w3": (n - 1) // 3 + 1, "w4": (n - 1) // 4 + 1, "w5": (n - 1) // 5 + 1},   # 固定窓（統計用。物語のまとまりではない）
+                         "block_inferred": block_of(blocks, n)},
             "before": before,
             "event": {"type": r.get("type"), "summary": r.get("summary"), "event": r.get("event"), "hero_act": r.get("hero_act")},
             "reward": {"fun": r.get("fun"), "types": None, "hook": r.get("hook"),
