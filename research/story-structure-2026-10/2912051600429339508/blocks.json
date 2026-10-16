@@ -1,0 +1,262 @@
+[
+ {
+  "start": 1,
+  "end": 3,
+  "kind": "関係の進展",
+  "expectation": "異世界帰りの誠が姪の陽菜に信じてもらえるか、探索者として通用するか",
+  "reward": "陽菜が魔法で信じ、配信パーティを組み、試験でC級を得る",
+  "state_change": "無職の叔父から、陽菜と組むC級探索者へ",
+  "boundary_confidence": "高",
+  "boundary_reason": "3話で相棒の役割分担と拳合わせで関係が落ち着き、4話から実際のダンジョン探索に入る"
+ },
+ {
+  "start": 4,
+  "end": 6,
+  "kind": "外の反応の回",
+  "expectation": "配信で認められるか、強さが世間に伝わるか",
+  "reward": "フェイク扱いで叩かれるが、陽菜の事情を知り、現場の探索者には強さが目撃される",
+  "state_change": "数字は伸びないが、陽菜との絆が深まり現場では規格外と認識される",
+  "boundary_confidence": "中",
+  "boundary_reason": "4話の初戦から6話の目撃まで追えるが、5話か6話のどちらで切れるか二通りある"
+ },
+ {
+  "start": 7,
+  "end": 8,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "禁忌の宝箱が開けられ崩落が起きる",
+  "reward": "崩落後に生存と深層到達が確認され、少女の悲鳴が届く",
+  "state_change": "深層で救助に向かう",
+  "boundary_confidence": "高",
+  "boundary_reason": "7話で崩落、8話で無傷が分かり救助を決めて、9話で小鈴視点に移る"
+ },
+ {
+  "start": 9,
+  "end": 12,
+  "kind": "関係の進展",
+  "expectation": "小鈴が深層の蟲に殺されかける",
+  "reward": "誠が救い、弟子入りと指輪、ボス撃破で同行の関係が固まる",
+  "state_change": "小鈴が正式な弟子になり、雄叫びのほうへ向かう",
+  "boundary_confidence": "高",
+  "boundary_reason": "9話の危機から12話で呼び名を認めるまで追え、13話で朝香の事件が始まる"
+ },
+ {
+  "start": 13,
+  "end": 15,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "朝香がコボルトに追い詰められる",
+  "reward": "誠が救い、朝香が弟子としてパーティに入り、陣形も決まる",
+  "state_change": "3人パーティで鉄格子の広場の警報へ",
+  "boundary_confidence": "中",
+  "boundary_reason": "15話の警報は次のボス戦につながり、15話を後ろに含める切り方もある"
+ },
+ {
+  "start": 16,
+  "end": 19,
+  "kind": "山場と余波",
+  "expectation": "変異ゴブリン3体に追い詰められ、魔剣を解放する",
+  "reward": "カースモードで3体を撃破し、首輪の騒ぎと野営で和む",
+  "state_change": "絆が深まり、同接が1万近くになる",
+  "boundary_confidence": "高",
+  "boundary_reason": "16話の危機から17話で決着し、18〜19話が余波、20話から帰還への探索が始まる"
+ },
+ {
+  "start": 20,
+  "end": 22,
+  "kind": "山場と余波",
+  "expectation": "帰還ポータルを起動できるか",
+  "reward": "碑文を読んで帰還し、報道陣に囲まれ、Aランクと収益分配が決まる",
+  "state_change": "時の人となり、協会の黒沢が現れる",
+  "boundary_confidence": "高",
+  "boundary_reason": "21話で帰還が叶い、22話の打ち上げで余波が収まり黒沢の登場で次に移る"
+ },
+ {
+  "start": 23,
+  "end": 24,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "協会が誠を勇者と見抜き、依頼を出す",
+  "reward": "依頼を受け、1か月の猶予を得る",
+  "state_change": "アーシオダン攻略に向けた準備期間へ",
+  "boundary_confidence": "高",
+  "boundary_reason": "24話で依頼を受け、猶予が決まり、25話から特訓に入る"
+ },
+ {
+  "start": 25,
+  "end": 27,
+  "kind": "日常の積み上げ",
+  "expectation": "1か月で弟子を鍛え、魔力交換を始める",
+  "reward": "弟子の成長が示され、魔力交換で絆が深まる",
+  "state_change": "猶予が明けてアーシオダンジョンに入る",
+  "boundary_confidence": "高",
+  "boundary_reason": "27話末でダンジョン突入、28話から探索が始まる"
+ },
+ {
+  "start": 28,
+  "end": 31,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "森の探索と、見えない射手の襲撃",
+  "reward": "射手は協会の番人の絵麻と分かり、仲間に加わる",
+  "state_change": "絵麻がパーティに入る",
+  "boundary_confidence": "高",
+  "boundary_reason": "29話の襲撃から31話で正体と加入が明かされ、32話から不和の段に入る"
+ },
+ {
+  "start": 32,
+  "end": 36,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "絵麻と弟子たちの不和、別行動した絵麻が捕らわれる",
+  "reward": "誠が救い、絵麻が謝り心を開く",
+  "state_change": "絵麻が仲間として受け入れられる",
+  "boundary_confidence": "高",
+  "boundary_reason": "32話の不和から33話で捕縛、35話で救出戦、36話で和解し、37話で日常に戻る"
+ },
+ {
+  "start": 37,
+  "end": 40,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "吊り橋の謎と、最奥の門を開く条件",
+  "reward": "陽菜が影の謎を解き、童話の問答で門が開く",
+  "state_change": "全員で最終決戦に挑む",
+  "boundary_confidence": "高",
+  "boundary_reason": "40話で門が開き全員が覚悟を決め、41話で魔王の分身が現れる"
+ },
+ {
+  "start": 41,
+  "end": 46,
+  "kind": "山場と余波",
+  "expectation": "魔王分身との一騎打ちと、仲間の分断",
+  "reward": "回復魔法で核を崩して勝ち、英雄として称賛される",
+  "state_change": "第1部が終わり、黒沢が新たな依頼を持ち込む",
+  "boundary_confidence": "高",
+  "boundary_reason": "45話で決着、46話で余波と次の依頼があり、47話から新しい構図に入る"
+ },
+ {
+  "start": 47,
+  "end": 51,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "剛田との再会と、問題児の麗亜との手合わせ",
+  "reward": "麗亜を倒し、剛田に感謝される",
+  "state_change": "麗亜は敵意を抱いたまま",
+  "boundary_confidence": "中",
+  "boundary_reason": "47話は少年を助ける独立した回で、47話を前に置くか48話から始めるか二通りある。51話で麗亜戦が決着する"
+ },
+ {
+  "start": 52,
+  "end": 54,
+  "kind": "関係の進展",
+  "expectation": "絵麻のデートと、弟子たちの尾行",
+  "reward": "絵麻が手を繋ぎ、誠が異世界の恋を明かし、争奪戦が始まる",
+  "state_change": "恋のライバル関係が公然となる",
+  "boundary_confidence": "高",
+  "boundary_reason": "54話の争奪バトル宣言で関係が一段進み、55話から遠征の話に移る"
+ },
+ {
+  "start": 55,
+  "end": 59,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "ベルディアで負傷者を追い、麗亜が窮地に陥る",
+  "reward": "誠がオーガプリンスを倒し、麗亜が弟子入りする",
+  "state_change": "麗亜がパーティに加わる",
+  "boundary_confidence": "高",
+  "boundary_reason": "57話で負傷者発見、58話で窮地、59話で決着と弟子入り、60話から新歓に移る"
+ },
+ {
+  "start": 60,
+  "end": 61,
+  "kind": "関係の進展",
+  "expectation": "新入りの麗亜がパーティに馴染めるか",
+  "reward": "麗亜が姉弟子たちと軽口を交わし、連携を始める",
+  "state_change": "5人でベルディアに戻る",
+  "boundary_confidence": "低",
+  "boundary_reason": "60話は新歓の会話、61話は連携の導入で、切れ目は便宜上のもの"
+ },
+ {
+  "start": 62,
+  "end": 66,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "金スラの危険を警告され、徘徊型の敵が迫る",
+  "reward": "誠が魔力過剰注入で無傷で倒し、遊園地行きが決まる",
+  "state_change": "次はダンジョンランドへ",
+  "boundary_confidence": "高",
+  "boundary_reason": "62話の警告から65話で決着、66話の余波と約束で終わり、67話から遊園地の日常になる"
+ },
+ {
+  "start": 67,
+  "end": 70,
+  "kind": "日常の積み上げ",
+  "expectation": "遊園地で麗亜が肩の力を抜けるか",
+  "reward": "麗亜が「楽しむ修行」を理解し、記念写真を撮る",
+  "state_change": "一泊二日が終わり、麗亜が打ち解ける",
+  "boundary_confidence": "高",
+  "boundary_reason": "70話の観覧車と記念写真で遊園地編が締まる"
+ },
+ {
+  "start": 71,
+  "end": 73,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "夢芽の失踪を受け、準備を整えてウソリーへ向かう",
+  "reward": "依頼を受け、訓練と休養を経てダンジョンに入る",
+  "state_change": "ウソリー探索が始まる",
+  "boundary_confidence": "高",
+  "boundary_reason": "71話で依頼、73話でダンジョン突入、74話から戦闘が続く"
+ },
+ {
+  "start": 74,
+  "end": 77,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "ウソリーで強敵に会い、モルティーノが小鈴を狙う",
+  "reward": "小鈴が拉致されて救出の目的が確定し、誠が殺気を見せる",
+  "state_change": "小鈴救出を目指す",
+  "boundary_confidence": "中",
+  "boundary_reason": "74〜76話の探索で期待が積まれ、77話の拉致で転じるため、76話と77話のどちらで切るか二通りある"
+ },
+ {
+  "start": 78,
+  "end": 82,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "拉致された小鈴を探し、罠と試練を越える",
+  "reward": "朝香と絵麻が和解し、劇場の館に到達する",
+  "state_change": "館でモルティーノと対面する",
+  "boundary_confidence": "中",
+  "boundary_reason": "78〜81話は救出行の積み上げで、82話の館での対面を前のまとまりに含めるか、次に回すかで二通りある"
+ },
+ {
+  "start": 83,
+  "end": 86,
+  "kind": "山場と余波",
+  "expectation": "不死身のモルティーノを倒し、小鈴を救う",
+  "reward": "本体を見抜いて撃破し、小鈴と夢芽ら80人以上を救出する",
+  "state_change": "救出が成り、人間の協力者の疑いが残る",
+  "boundary_confidence": "高",
+  "boundary_reason": "83話で絵麻が負傷、85話で決着、86話で救出が完了し、87話から余波の打ち上げに入る"
+ },
+ {
+  "start": 87,
+  "end": 89,
+  "kind": "日常の積み上げ",
+  "expectation": "救出の余波で、誠の有名人としての日常が描かれる",
+  "reward": "打ち上げ、CM撮影、Sランク昇格、カラオケで麗亜と打ち解ける",
+  "state_change": "Sランカーになり、黒沢が次の依頼を持ち込む",
+  "boundary_confidence": "高",
+  "boundary_reason": "89話の笑いで日常が締まり、90話で黒沢が新たな依頼を持って現れる"
+ },
+ {
+  "start": 90,
+  "end": 96,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "アブクマの21階層とXエッグの調査",
+  "reward": "魔力反転でクイーンを倒し、Xエッグは無力化されるが、伊出光が現れる",
+  "state_change": "事態は収束するが手柄を奪われる気配が出る",
+  "boundary_confidence": "高",
+  "boundary_reason": "96話でクイーンを倒して帰還し、97話で手柄を奪われた余波の日常に移る"
+ },
+ {
+  "start": 97,
+  "end": 99,
+  "kind": "日常の積み上げ",
+  "expectation": "手柄を奪われた後、仲間と日常に戻る",
+  "reward": "焼肉とゲーセンで癒され、弟子たちだけの配信で成長が示される",
+  "state_change": "通常の配信に戻り、朝香がAランクに昇格する",
+  "boundary_confidence": "低",
+  "boundary_reason": "97〜98話は日常が続き、99話で配信再開に区切るのは便宜上である"
+ }
+]

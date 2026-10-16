@@ -45,7 +45,7 @@ pending         [まだ無い項目の名前]
 
 ## 停止（2026-10-16 08:20 UTC。利用枠のため）
 - 済み：収集 45 作・3,115 話、印 45 作・3,120 話（全部）、推定ブロック 39 作、作品ごとのまとめ 21 作、★・PV の時系列、export（45 作）、STATS.md。
-- 未：推定ブロックの残り 6 作、作品ごとのまとめの残り 24 作（export には入らない。読み物）、面白さの型の一覧の全作での作り直し（今は 26 作の初版）。
+- 追記（同日）：推定ブロックの残りと、面白さの型の一覧の全作での作り直し（sonnet）は済み。未はまとめの残り 24 作だけ（読み物。export には入らない）。
 - 再開（作業フォルダで。LLM を使うのはこの三行だけ。どれも済んだ作品は飛ばす）：
   python3 ../pachi-book/scripts/market_blocks.py --out research/story-structure-2026-10 --workers 1
   python3 ../pachi-book/scripts/market_fun_types.py --out research/story-structure-2026-10 --groups research/story-structure-2026-10/groups.json --extra-own research/story-structure-2026-10/own --corpus <corpus>

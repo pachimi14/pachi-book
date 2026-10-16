@@ -1,0 +1,162 @@
+[
+ {
+  "start": 1,
+  "end": 5,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "血を抜かれた変死体と動く遺体の正体は何か、欧州の怪異を追えるか",
+  "reward": "動く遺体を撃ち、吸血鬼の線と手がかり（牧師・ヨーゼフの不在）が揃う",
+  "state_change": "調査が欧州人・教会筋へ絞られ、ヨーゼフが関わる気配が出る",
+  "boundary_confidence": "中",
+  "boundary_reason": "1〜2話が事件、3〜5話は日常・会話で聞き込みが続くため、2話か5話のどちらで切るか二通りある"
+ },
+ {
+  "start": 6,
+  "end": 10,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "被害者側が武器を持った件と、ヨーゼフの傷から誰が犯人か",
+  "reward": "傷が一日で治ったという不審が出て、加藤がヨーゼフに会いに動く",
+  "state_change": "疑いがヨーゼフに向かい、確かめに行く段階へ移る",
+  "boundary_confidence": "中",
+  "boundary_reason": "6話の匕首の遺体から10話の「会いに行く」決意まで追えるが、7〜8話は日常寄りで切れ目が二通りある"
+ },
+ {
+  "start": 11,
+  "end": 12,
+  "kind": "日常の積み上げ",
+  "expectation": "隊員に吸血鬼の件を共有できるか",
+  "reward": "伊藤・山本が復帰し、情報と対魔弾の配分が揃う",
+  "state_change": "三人で動く体制に移る",
+  "boundary_confidence": "低",
+  "boundary_reason": "11〜12話は会話中心で、13話の新事件までの便宜上の区切り"
+ },
+ {
+  "start": 13,
+  "end": 17,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "竹田邸の立て篭もりと野犬のアンデッドをどう制圧するか",
+  "reward": "柴田を討つが、真犯人は別だと分かる",
+  "state_change": "真犯人探しが続き、疑いがヨーゼフ一本に絞られる",
+  "boundary_confidence": "高",
+  "boundary_reason": "13話の事件発生から16話の決着、17話の「真犯人は別」で状態が明確に変わる"
+ },
+ {
+  "start": 18,
+  "end": 26,
+  "kind": "山場と余波",
+  "expectation": "ヨーゼフに直接問う。吸血鬼かどうか、どう決着するか",
+  "reward": "ヨーゼフが自白し、加藤が討ち、葬儀で別れを済ませる",
+  "state_change": "第1部が閉じ、日常へ戻る",
+  "boundary_confidence": "高",
+  "boundary_reason": "20〜23話で対面から死別まで追え、26話の葬儀で第1部完と明示される"
+ },
+ {
+  "start": 27,
+  "end": 30,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "鬼の噂と行方不明者は何か",
+  "reward": "山本が鬼の情報を掴み、赤鬼が実在すると分かる",
+  "state_change": "特討隊が出動する",
+  "boundary_confidence": "中",
+  "boundary_reason": "27〜29話は日常の積み上げで、30話の出現で事件になるため、29話か30話の切れ目が二通りある"
+ },
+ {
+  "start": 31,
+  "end": 36,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "赤鬼に勝てるか。敗走後の再戦は",
+  "reward": "敗走を経て、将軍から討伐命令と鬼切の刀が託される",
+  "state_change": "伊藤の再戦に向かう準備が整う",
+  "boundary_confidence": "高",
+  "boundary_reason": "31〜32話の敗走から36話の討伐命令で、再戦へ状態が明らかに変わる"
+ },
+ {
+  "start": 37,
+  "end": 44,
+  "kind": "山場と余波",
+  "expectation": "伊藤と赤鬼の一騎打ちの行方",
+  "reward": "伊藤が赤鬼を斬り、墓に弔われる",
+  "state_change": "第2部が終わる",
+  "boundary_confidence": "高",
+  "boundary_reason": "41話の決着から42〜44話の弔いまで追え、44話で第2部完"
+ },
+ {
+  "start": 45,
+  "end": 46,
+  "kind": "日常の積み上げ",
+  "expectation": "鬼の件後の隊と、梅子との夜",
+  "reward": "鬼切の名と対魔弾の支給、梅子との穏やかな夜",
+  "state_change": "貸座敷の事件が始まる",
+  "boundary_confidence": "中",
+  "boundary_reason": "45話は日常、46話の後半で事件が起きるため、46話の頭か末尾かで切れ目が二通りある"
+ },
+ {
+  "start": 47,
+  "end": 55,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "狼女は誰か、山本は撃てるか",
+  "reward": "千代子を絞り込み、山本に任せる決断が下る",
+  "state_change": "山本が正体を突き止めに動く",
+  "boundary_confidence": "中",
+  "boundary_reason": "47〜48話の事件発生から55話の山本への一任まで追えるが、53〜55話は問いが続くので切れ目が二通りある"
+ },
+ {
+  "start": 56,
+  "end": 65,
+  "kind": "山場と余波",
+  "expectation": "満月に千代子が変身し、山本は討てるか",
+  "reward": "山本が千代子を看取り、復帰して第3部が終わる",
+  "state_change": "山本が一皮剥けて日常に戻る",
+  "boundary_confidence": "高",
+  "boundary_reason": "60話の変身から64話の決着、65話の復帰と第3部完まで追える"
+ },
+ {
+  "start": 66,
+  "end": 71,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "熊か鵺か。遺体の正体を探る",
+  "reward": "熊を倒し、背後から鵺が現れて初戦になる",
+  "state_change": "鵺に逃げられ、準備を立て直す",
+  "boundary_confidence": "中",
+  "boundary_reason": "66〜69話は調査、70〜71話が戦闘で、72話の作戦会議を含めるかで二通りある"
+ },
+ {
+  "start": 72,
+  "end": 77,
+  "kind": "外の反応の回",
+  "expectation": "鵺を攻略できるか。仲間を救えるか",
+  "reward": "撤退戦のあと警官隊の援護で救出し、将軍に増援を頼む",
+  "state_change": "三人入院で、退院後に討伐する方針が決まる",
+  "boundary_confidence": "中",
+  "boundary_reason": "72話は日常、73〜75話が戦闘、76〜77話は報告と対応で、切れ目が二通りある"
+ },
+ {
+  "start": 78,
+  "end": 82,
+  "kind": "日常の積み上げ",
+  "expectation": "再戦までに準備が間に合うか",
+  "reward": "機関銃と対魔銃剣の目処がつき、隊が揃う",
+  "state_change": "決行が翌日と決まる",
+  "boundary_confidence": "低",
+  "boundary_reason": "78〜82話は準備と会話が続き、80話の巣窟発見と81話の梅子との約束で切れ目が分かりにくい"
+ },
+ {
+  "start": 83,
+  "end": 87,
+  "kind": "山場と余波",
+  "expectation": "鵺の巣窟の討伐は成功するか",
+  "reward": "鵺を殲滅し、塚を建てて供養する",
+  "state_change": "第4部が終わる",
+  "boundary_confidence": "高",
+  "boundary_reason": "83話の決行から85話の巣窟、87話の塚と第4部完まで追える"
+ },
+ {
+  "start": 88,
+  "end": 90,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "教会付近で犯罪者だけを襲う化け物の正体は",
+  "reward": "雨樋が魔除けと分かり、犯罪者との結びつきを疑う",
+  "state_change": "張り込みが続く（まとまりは未完）",
+  "boundary_confidence": "低",
+  "boundary_reason": "88話の新章の事件提示から90話の日常の締めまでで、決着は未着のため切れ目が分からない"
+ }
+]
