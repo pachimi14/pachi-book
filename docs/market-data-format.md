@@ -42,3 +42,12 @@ pending         [まだ無い項目の名前]
 2. 面白さの型の一覧を全作で作り直し、fun の一行に型の番号を付ける（reward.types）。
 3. delivery.kind と relation_to_prior.callbacks を付ける二回目の印付け（必要なら。費用は一回目の半分）。
 4. 推定ブロック（market_blocks.py）を全作に付ける。制作上のブロック（3〜5 話で短期の期待を作り、報酬を届け、次の状態へ移る単位）は ② の定義。①はその観測だけを渡す。
+
+## 停止（2026-10-16 08:20 UTC。利用枠のため）
+- 済み：収集 45 作・3,115 話、印 45 作・3,120 話（全部）、推定ブロック 39 作、作品ごとのまとめ 21 作、★・PV の時系列、export（45 作）、STATS.md。
+- 未：推定ブロックの残り 6 作、作品ごとのまとめの残り 24 作（export には入らない。読み物）、面白さの型の一覧の全作での作り直し（今は 26 作の初版）。
+- 再開（作業フォルダで。LLM を使うのはこの三行だけ。どれも済んだ作品は飛ばす）：
+  python3 ../pachi-book/scripts/market_blocks.py --out research/story-structure-2026-10 --workers 1
+  python3 ../pachi-book/scripts/market_fun_types.py --out research/story-structure-2026-10 --groups research/story-structure-2026-10/groups.json --extra-own research/story-structure-2026-10/own --corpus <corpus>
+  python3 ../pachi-book/scripts/market_analyze.py --corpus <corpus> --out research/story-structure-2026-10 --synth-only --workers 1   # 任意
+- そのあと LLM なしで：market_export.py と market_report.py。
