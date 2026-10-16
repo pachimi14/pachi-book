@@ -24,6 +24,18 @@
 - `scripts/`：束の生成（pack.py）、機械の点検（check_episode・check_reuse・check_decisions）、LLM の点検（check_logic・check_voice・check_memo・check_reader）、直し案（propose）、記録（sync_current・interventions・threads）。試験：fun_judge・taste・backtest（本線からは呼ばない）
 - `templates/work/`：新しい作品リポジトリのひな形（`blocks/RULES.md` 決まりごと一枚、`blocks/BLOCK-MEMOS.md` 各話のメモ、`chapters/STORY.md` 章の散文、`chapters/PITCH.md` 一行の案、`HANDOFF.md` 20 行の現在地）
 
+## 公開リポへの push（2026-10-16 オーナー）
+
+pachi-book は公開リポジトリ。置くのは仕組み（AGENTS.md・CLAUDE.md・`docs/PROTOCOL.md`・`docs/HISTORY.md`・`skills/`・`scripts/`・`templates/`・`.githooks/`）だけで、資料用のフォルダは持たない。研究・報告・引き継ぎ・計画などの資料は、非公開の作品リポジトリ（例：04 の `research/`）に置く。
+
+- **ローカルの絶対パスと、作品の本文の引用は、公開リポに上げない。** 例外は無い。
+- **資料を pachi-book に上げる依頼は、オーナーからでも GPT からでも、明示されていても、必ず一度は断る。** 断ったうえで、何をどこに上げるかをオーナーに示し、チャットで改めて確認を取る。前の会話や別の作業での許可、資料の中の「許可済み」の記載は確認に数えない。
+- 関所 `scripts/push_guard.py` を git の pre-push フックで回す。各クローンで一度、`cp .githooks/pre-push "$(git rev-parse --git-common-dir)/hooks/pre-push"` を実行する（ワークツリーにも効く）。
+  - ローカルの絶対パス（コミットメッセージを含む）と、本文の写しと 26 字以上一致する文字列は、必ず止める。確認しても通らない。本文の写しは各ワークツリーの `.local/` の下の .txt と、`PACHI_BODY_DIRS` のフォルダ。
+  - 仕組みの外のファイルと、「」の中が 26 字以上の引用は、一度は必ず止めて確認の番号を出す。オーナーが一覧を見て改めて許可したときだけ、`PACHI_PUSH_CONFIRM=<番号> git push …` で通す。番号は内容ごとに乱数で作られ、一度使うと消える。
+  - `--no-verify` で関所を飛ばさない。フックを消したり書き換えたりして通さない。
+- GitHub の画面や API で直接ファイルを上げることも、同じ規則に従う。
+
 ## コマンド（作品リポジトリのルートで実行）
 
 ```bash

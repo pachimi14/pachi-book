@@ -1,0 +1,15 @@
+#!/bin/sh
+# pachi-book の push の関所（scripts/push_guard.py）。入れ方は AGENTS.md の「公開リポへの push」。
+# 関所が見つからない・Python が無いときは push を止める。
+script="$(git rev-parse --git-common-dir)/../scripts/push_guard.py"
+if [ ! -f "$script" ]; then
+  echo "[push_guard] $script が無いので push を止めた" >&2
+  exit 1
+fi
+for py in python python3 py; do
+  if command -v "$py" >/dev/null 2>&1; then
+    exec "$py" -I "$script" "$@"
+  fi
+done
+echo "[push_guard] Python が無いので push を止めた" >&2
+exit 1
