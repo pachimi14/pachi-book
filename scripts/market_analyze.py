@@ -108,7 +108,10 @@ def label_work(work_dir, out_dir, model, effort, chunk, max_episodes, log):
         for l in lab_path.read_text(encoding="utf-8").splitlines():
             if l.strip():
                 r = json.loads(l)
-                done[r["n"]] = r
+                try:
+                    done[int(r["n"])] = r
+                except (KeyError, TypeError, ValueError):
+                    continue    # n の無い行は無視（その話は付け直す）
     state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.is_file() else {"characters": {}, "lines": {}, "recent": [], "chapter": ""}
     toc = "\n".join(f"{c['title'] or '（章なし）'}: {c['episodes'][0] if c['episodes'] else '-'}〜{c['episodes'][-1] if c['episodes'] else '-'}" for c in meta["chapters"])
     todo = [p for p in eps if int(p.stem) not in done]
@@ -137,8 +140,13 @@ def label_work(work_dir, out_dir, model, effort, chunk, max_episodes, log):
             (out_dir / f"raw-{batch[0].stem}.txt").write_text(text, encoding="utf-8")
             return False
         with lab_path.open("a", encoding="utf-8") as f:
-            for e in data.get("episodes", []):
-                n = int(e.get("n", 0))
+            got = [e for e in data.get("episodes", []) if isinstance(e, dict)]
+            for k, e in enumerate(got):
+                try:
+                    n = int(e.get("n"))
+                except (TypeError, ValueError):
+                    n = int(batch[k].stem) if k < len(batch) else 0   # n が無ければ渡した順で補う
+                    e["n"] = n
                 e["mech"] = mech.get(n)
                 f.write(json.dumps(e, ensure_ascii=False) + "\n")
         state = data.get("state", state)
@@ -200,11 +208,14 @@ def main():
         print(msg, flush=True)
 
     def one(d):
-        ok = True
-        if not a.synth_only:
-            ok = label_work(d, out / d.name, a.model, a.effort, a.chunk, a.max_episodes, log)
-        if ok and not a.no_synth:
-            synth_work(d, out / d.name, a.synth_model, "high", log)
+        try:
+            ok = True
+            if not a.synth_only:
+                ok = label_work(d, out / d.name, a.model, a.effort, a.chunk, a.max_episodes, log)
+            if ok and not a.no_synth:
+                synth_work(d, out / d.name, a.synth_model, "high", log)
+        except Exception as ex:  # noqa: BLE001  一作の失敗で全部を止めない
+            log(f"  {d.name}: 失敗 {type(ex).__name__}: {ex}")
 
     with ThreadPoolExecutor(max(1, a.workers)) as pool:
         list(pool.map(one, works))
