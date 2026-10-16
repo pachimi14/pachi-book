@@ -160,6 +160,9 @@ def synth_work(work_dir, out_dir, model, effort, log):
     lab_path = out_dir / "labels.jsonl"
     if not lab_path.is_file():
         return
+    wm = out_dir / "work.md"
+    if wm.is_file() and wm.stat().st_mtime > lab_path.stat().st_mtime:
+        return   # 印が増えていなければ作り直さない
     rows = [json.loads(l) for l in lab_path.read_text(encoding="utf-8").splitlines() if l.strip()]
     toc = "\n".join(f"{c['title'] or '（章なし）'}: {c['episodes'][0] if c['episodes'] else '-'}〜{c['episodes'][-1] if c['episodes'] else '-'}" for c in meta["chapters"])
     compact = "\n".join(json.dumps({k: v for k, v in r.items() if k != "mech"}, ensure_ascii=False) for r in rows)

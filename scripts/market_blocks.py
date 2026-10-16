@@ -38,8 +38,9 @@ PROMPT = """あなたは連載 web 小説の構成を調べる編集者です。
 
 def infer(d, model, effort, log):
     lab = d / "labels.jsonl"
-    if not lab.is_file() or (d / "blocks.json").is_file():
-        return
+    bj = d / "blocks.json"
+    if not lab.is_file() or (bj.is_file() and bj.stat().st_mtime > lab.stat().st_mtime):
+        return   # 印が増えていなければ作り直さない
     rows = sorted((json.loads(l) for l in lab.read_text(encoding="utf-8").splitlines() if l.strip()), key=lambda r: int(r.get("n", 0)) if str(r.get("n", "")).isdigit() else 0)
     if len(rows) < 3:
         return
