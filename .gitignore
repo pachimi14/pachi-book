@@ -1,3 +1,4 @@
 __pycache__/
 *.pyc
 research/story-structure-2026-10/*/raw-*.txt
+research/story-structure-2026-10/export/
