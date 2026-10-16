@@ -1,0 +1,212 @@
+[
+ {
+  "start": 1,
+  "end": 2,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "魔王戦の決着と、帰還後に力が残るかという問い",
+  "reward": "魔王討伐と帰還、技術が残っている確認",
+  "state_change": "異世界の勇者から、技術を持つ現代の高校生へ",
+  "boundary_confidence": "高",
+  "boundary_reason": "1話で決着と帰還、2話で技術の残存が確認され、3話から新しい日常と別の目標に移る"
+ },
+ {
+  "start": 3,
+  "end": 5,
+  "kind": "日常の積み上げ",
+  "expectation": "AFOに興味を持つか、始めるかという期待",
+  "reward": "購入してログインし、キャラを作成する",
+  "state_change": "ゲーム未経験者から、AFOのプレイヤーへ",
+  "boundary_confidence": "中",
+  "boundary_reason": "3〜4話で興味から購入、5話でログイン。5話か6話のどちらで切るか二通りある"
+ },
+ {
+  "start": 6,
+  "end": 9,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "初心者が教官に疑われ、模擬戦に挑む",
+  "reward": "ガルドに勝ち、評価Sで街へ送り出される",
+  "state_change": "初心者から評価を得た剣士になり、配信を開始する",
+  "boundary_confidence": "高",
+  "boundary_reason": "6話で教官の疑い、8話で模擬戦に勝ち、9話で街に出て配信開始と状態が変わる"
+ },
+ {
+  "start": 10,
+  "end": 12,
+  "kind": "外の反応の回",
+  "expectation": "初配信の戦いが視聴者の目に留まるか",
+  "reward": "狼を倒し、切り抜きで視聴者が100人を超える",
+  "state_change": "無名から注目され始める",
+  "boundary_confidence": "中",
+  "boundary_reason": "10〜12話は反応が増える流れ。12話で切るか、13話の森への挑戦と合わせるか二通りある"
+ },
+ {
+  "start": 13,
+  "end": 16,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "Lv2で格上のグレイウルフに挑めるか",
+  "reward": "無傷で勝ち、上位勢に見抜かれ、CROWがフォローする",
+  "state_change": "CROWの目に留まり、二日目の配信が注目の中で始まる",
+  "boundary_confidence": "中",
+  "boundary_reason": "13〜14話で勝利、15〜16話は余波。16話の二日目配信開始で切るか17話に含めるか二通りある"
+ },
+ {
+  "start": 17,
+  "end": 20,
+  "kind": "関係の進展",
+  "expectation": "囲まれたプレイヤーの危機と、CROWが何を問うか",
+  "reward": "介入して救い、CROWから公平デュエルを申し込まれる",
+  "state_change": "CROWとの対戦が決まる",
+  "boundary_confidence": "高",
+  "boundary_reason": "17〜18話で危機と介入、19〜20話でコメントから申し込みまでが追え、21話から対戦に入る"
+ },
+ {
+  "start": 21,
+  "end": 23,
+  "kind": "山場と余波",
+  "expectation": "初心者がトップ剣士に勝てるか",
+  "reward": "HP11%でCROWに勝ち、再戦を約束する",
+  "state_change": "話題の人物になり、REINAにも名を覚えられる",
+  "boundary_confidence": "高",
+  "boundary_reason": "21話でデュエル開始、22話で決着、23話で余波が描かれ、24話から日常に戻る"
+ },
+ {
+  "start": 24,
+  "end": 28,
+  "kind": "日常の積み上げ",
+  "expectation": "注目の中で次に何をするか、スキルをどう選ぶか",
+  "reward": "補助スキルを選び、エルダーオークを倒し、装備を更新する",
+  "state_change": "装備を整え、北方森林調査へ向かう",
+  "boundary_confidence": "中",
+  "boundary_reason": "24〜25話は日常、26〜27話にエリート戦、28話は装備。27話で切る二通りがある"
+ },
+ {
+  "start": 29,
+  "end": 32,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "森の異変の原因は何か",
+  "reward": "調査を達成し、熊を逃がし、緊急調査が地域クエストに広がる",
+  "state_change": "個人の発見が街とトップ勢を動かす事態になる",
+  "boundary_confidence": "高",
+  "boundary_reason": "29話で異変、30〜31話で危機と回避、32話でギルド報告と地域クエスト化し、状態が変わる"
+ },
+ {
+  "start": 33,
+  "end": 34,
+  "kind": "関係の進展",
+  "expectation": "REINAが悠真をどう見るか",
+  "reward": "情報を交換し、REINAとフレンドになる",
+  "state_change": "REINAとの関係が成立し、ラグナ岩地へ向かう",
+  "boundary_confidence": "中",
+  "boundary_reason": "33〜34話は関係の進展だが、34話末はロックリザード戦の入りで、35話に含める二通りがある"
+ },
+ {
+  "start": 35,
+  "end": 38,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "未登録洞窟は何か、どう入るか",
+  "reward": "洞窟を見つけ、入口の開放条件を突き止めて入る",
+  "state_change": "洞窟の探索が始まる",
+  "boundary_confidence": "高",
+  "boundary_reason": "36話で洞窟発見、37話で入れない謎、38話で条件を解いて入り、39話から攻略に移る"
+ },
+ {
+  "start": 39,
+  "end": 41,
+  "kind": "山場と余波",
+  "expectation": "ボス部屋の退路が閉じる中で勝てるか",
+  "reward": "ロックイーターを倒し、装備を更新して備える",
+  "state_change": "装備を更新し、北の異変が再び動き始める",
+  "boundary_confidence": "高",
+  "boundary_reason": "39話でボス戦に入り、40話で決着、41話で装備更新と北の再始動が描かれる"
+ },
+ {
+  "start": 42,
+  "end": 44,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "Lv8を目指して最深部へ入り、何が待つか",
+  "reward": "クリスタルイーターを倒してLv8になり、封鎖扉が現れる",
+  "state_change": "Lv8になり、洞窟の謎が深まる",
+  "boundary_confidence": "中",
+  "boundary_reason": "42話は情報共有でLv8を目標にし、43〜44話で達成。42話を前のまとまりに含める二通りがある"
+ },
+ {
+  "start": 45,
+  "end": 48,
+  "kind": "外の反応の回",
+  "expectation": "北の災害級個体が街に迫る",
+  "reward": "倒さず逸らす方針で街を守る動きを作る",
+  "state_change": "CALAMITYの進路が東に変わり、洞窟と結びつく",
+  "boundary_confidence": "高",
+  "boundary_reason": "45話で緊急クエスト、46〜47話でCALAMITY判明、48話で進路が東に変わり、49話から調査に移る"
+ },
+ {
+  "start": 49,
+  "end": 52,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "共鳴災害の正体と、洞窟の異変の関係",
+  "reward": "洞窟調査で結晶侵食と繋がりを確認する",
+  "state_change": "アルカディアを巻き込む調査隊が作られる流れになる",
+  "boundary_confidence": "中",
+  "boundary_reason": "49〜50話は調査と準備、51〜52話は洞窟調査。50話で切る二通りがある"
+ },
+ {
+  "start": 53,
+  "end": 55,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "第二次調査隊が信号源を突き止める",
+  "reward": "信号源が真下と分かり、撤退を完遂する",
+  "state_change": "CALAMITYの身体が紫に光る謎が提示される",
+  "boundary_confidence": "高",
+  "boundary_reason": "53話で編成、54話で調査、55話で撤退完遂とCALAMITYの異変が示される"
+ },
+ {
+  "start": 56,
+  "end": 58,
+  "kind": "山場と余波",
+  "expectation": "CALAMITYを攻撃するか静観するか、南側防衛線は持つか",
+  "reward": "防衛線で個体を止め、避難を終わらせる",
+  "state_change": "信号の正体が結晶核と分かり、地下が動き出す",
+  "boundary_confidence": "高",
+  "boundary_reason": "56話で議論、57〜58話で防衛戦と避難完了、58話末で NEXT PHASE が出て59話から新段階に入る"
+ },
+ {
+  "start": 59,
+  "end": 62,
+  "kind": "山場と余波",
+  "expectation": "結晶を再生させずに斬る手段はあるか、リベルタを守れるか",
+  "reward": "黒鉄剣でSIGNAL：4の形成を断つ",
+  "state_change": "黒鉄剣が折れ、素材を取る探索班が組まれる",
+  "boundary_confidence": "高",
+  "boundary_reason": "59話でPHASE 2、60話で斬る手段、61〜62話で防衛と SIGNAL：4 を断ち、探索班編成で次の目標が決まる"
+ },
+ {
+  "start": 63,
+  "end": 67,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "素材を採掘し、坑道の奥の存在に対処する",
+  "reward": "紫脈竜鉱を確保し、ヴァルグランとCALAMITYが SIGNAL：5 を止める",
+  "state_change": "専用剣の製作が決まり、NETWORKの構造が見える",
+  "boundary_confidence": "中",
+  "boundary_reason": "63話で準備、64〜66話で採掘と竜、67話で持ち帰りと整理。67話を次のまとまりに含める二通りがある"
+ },
+ {
+  "start": 68,
+  "end": 70,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "専用剣が完成し、西のNODEが何を起こすか",
+  "reward": "〈無響〉を受け取り、初陣で共鳴適応を確かめ、共鳴が地下の一点を指すと分かる",
+  "state_change": "ACTIVE SIGNALが4になり、地下の一点が次の謎になる",
+  "boundary_confidence": "中",
+  "boundary_reason": "68話は学校と待機、69話で剣と SIGNAL：6、70話で初陣。68話の位置に二通りある"
+ },
+ {
+  "start": 71,
+  "end": 75,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "第零採掘区を探し、共鳴鍵で扉を開けるか",
+  "reward": "扉と鍵を見つけ、認証を試すが共鳴不一致で中断される",
+  "state_change": "封鎖は維持され、記録と今の状態が違う可能性が出る",
+  "boundary_confidence": "低",
+  "boundary_reason": "71〜75話は探索と調査が連続し、75話は中断で終わる。物語の続きが切れず、便宜上ここで区切った"
+ }
+]

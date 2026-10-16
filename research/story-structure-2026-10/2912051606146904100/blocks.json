@@ -1,0 +1,302 @@
+[
+ {
+  "start": 1,
+  "end": 3,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "転移罠で第8層に孤立。地上へ戻れるか",
+  "reward": "第7層で救助要請が通じ、帰還の目処が立つ",
+  "state_change": "孤立状態から救助待ちへ",
+  "boundary_confidence": "高",
+  "boundary_reason": "1話で事件発生、2話で脱出、3話で救助要請が通じ、4話で地上に戻り状態が変わる"
+ },
+ {
+  "start": 4,
+  "end": 6,
+  "kind": "日常の積み上げ",
+  "expectation": "身体の診断と救助費・衣類の金策、榊との関係の行方",
+  "reward": "診断確定、榊が普通に受け入れ、服と制度が整う",
+  "state_change": "再評価検査を受ける段階へ",
+  "boundary_confidence": "中",
+  "boundary_reason": "7話の日常を6話に含めるか二通りあるが、6話末で検査日程が確定し7話は待機にあたる"
+ },
+ {
+  "start": 7,
+  "end": 9,
+  "kind": "日常の積み上げ",
+  "expectation": "探索資格が戻るか",
+  "reward": "検査で仮許可が再開され、第1層で初収入を得る",
+  "state_change": "探索者としての稼ぎが始まる",
+  "boundary_confidence": "高",
+  "boundary_reason": "7話の検査へ向かう決意、8話の許可再開、9話の初採取で期待と報酬が揃い、10話から稼ぎの別の話"
+ },
+ {
+  "start": 10,
+  "end": 13,
+  "kind": "日常の積み上げ",
+  "expectation": "学校費用と救助費を探索で賄えるか",
+  "reward": "長時間探索でLEVEL5・約2.9万円、入学式で正体を公表、初期費用を稼ぐ",
+  "state_change": "学校生活と探索の両立の型ができる",
+  "boundary_confidence": "低",
+  "boundary_reason": "日常と稼ぎが続き、10〜13話に明確な危機や決着はなく便宜上の区切り"
+ },
+ {
+  "start": 14,
+  "end": 15,
+  "kind": "日常の積み上げ",
+  "expectation": "久我の誘いと学校生活への慣れ",
+  "reward": "更衣室や体育に慣れ、土曜の9時間探索で収入",
+  "state_change": "行止まりの気流を発見",
+  "boundary_confidence": "低",
+  "boundary_reason": "14〜15話は日常で、16話の亀裂の接続で初めて事件が動く"
+ },
+ {
+  "start": 16,
+  "end": 18,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "亀裂の先は何か、隠してよいか",
+  "reward": "白峰に入り戦い、点検は異常なし。友人と遊び、初めての生理も経験する",
+  "state_change": "白峰が自分だけの場所に",
+  "boundary_confidence": "中",
+  "boundary_reason": "16話で事件、17話で反応と日常、18話は別の日常の事件で、18話をどちらに含めるか二通りある"
+ },
+ {
+  "start": 19,
+  "end": 20,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "尾行者と母の手がかり",
+  "reward": "保守施設で母の利用記録、尾行者は協会に申告され接触回避",
+  "state_change": "上位端末へ向かう目的が固まる",
+  "boundary_confidence": "高",
+  "boundary_reason": "19話で尾行と記録、20話で申告と対処し、21話で白峰の次の探索へ移る"
+ },
+ {
+  "start": 21,
+  "end": 25,
+  "kind": "山場と余波",
+  "expectation": "母の足取りを追う。隔離区画から帰れるか",
+  "reward": "母の名と進入記録を確認、雷角蜥を倒して封鎖解除",
+  "state_change": "7日ぶりに帰還し全国報道に",
+  "boundary_confidence": "高",
+  "boundary_reason": "22話で閉じ込められ、25話で解除と帰還、26話から地上の後処理に移る"
+ },
+ {
+  "start": 26,
+  "end": 27,
+  "kind": "外の反応の回",
+  "expectation": "帰還後の扱いと協会の評価はどうなるか",
+  "reward": "探索許可一時停止から正式Fランク、白峰接続の条件を記録",
+  "state_change": "尾行男が再び現れる",
+  "boundary_confidence": "中",
+  "boundary_reason": "26話の復学と27話の再審査を一つにまとめたが、27話末の尾行で次へ続くので27話で切るか二通りある"
+ },
+ {
+  "start": 28,
+  "end": 29,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "誘拐からの脱出",
+  "reward": "Rookらしき男に救われ、白峰の暫定入域許可を得る",
+  "state_change": "50万円の請求書と雷撃の収束という新たな課題",
+  "boundary_confidence": "高",
+  "boundary_reason": "27話末で尾行、28話で誘拐と救出、29話で後処理"
+ },
+ {
+  "start": 30,
+  "end": 33,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "母の足取りをノードで追えるか、50万円を返せるか",
+  "reward": "経路復元で母の最終経路が判明、完済、LEVEL20",
+  "state_change": "深部接続の申請が可能に",
+  "boundary_confidence": "高",
+  "boundary_reason": "31話でノードを見つけ、32話で復元、33話で母の進入記録と完済"
+ },
+ {
+  "start": 34,
+  "end": 36,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "深部接続の先に何があるか",
+  "reward": "母の管理照会履歴を確認、重力異常を発見し、廃都市へ到達",
+  "state_change": "高瀬との関係が整理され、廃都市探索へ",
+  "boundary_confidence": "中",
+  "boundary_reason": "34話の管理層と35話の高瀬、36話の廃都市を含めるが、35話で切る二通りがある"
+ },
+ {
+  "start": 37,
+  "end": 39,
+  "kind": "関係の進展",
+  "expectation": "境界の調査と、男子からの接近",
+  "reward": "空に浮く水塊を確認、男子三人の意図が確かに",
+  "state_change": "学校実習へ",
+  "boundary_confidence": "低",
+  "boundary_reason": "37話の探索と38〜39話の学校日常が混在し、切れ目が印から分かりにくい"
+ },
+ {
+  "start": 40,
+  "end": 43,
+  "kind": "日常の積み上げ",
+  "expectation": "《孤独者》の弱体化の確認、夏休みの始まり",
+  "reward": "球技大会、プール、雷刃への進化、夏祭りでの浴衣",
+  "state_change": "夏の日常が一段落",
+  "boundary_confidence": "低",
+  "boundary_reason": "40〜43話は日常と軽い探索が続き、事件の決着が見えない"
+ },
+ {
+  "start": 44,
+  "end": 46,
+  "kind": "日常の積み上げ",
+  "expectation": "Eランク昇格と新しい探索",
+  "reward": "Eランク合格、雷霆Ⅰへの進化、搬送層と湖岸の発見",
+  "state_change": "湖岸区画へ",
+  "boundary_confidence": "中",
+  "boundary_reason": "44話の昇格と45話の進化、46話の降下を含めるが、45話で切る二通りある"
+ },
+ {
+  "start": 47,
+  "end": 50,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "湖岸区画の魔物、第八区画の謎",
+  "reward": "B級相当を倒しLEVEL25、第八区画の記録施設で都市の過去が分かる",
+  "state_change": "災害の記録へ",
+  "boundary_confidence": "中",
+  "boundary_reason": "47話は夏休みの日常で、48〜50話の探索から始まる別のまとまりと切るか二通りある"
+ },
+ {
+  "start": 51,
+  "end": 53,
+  "kind": "日常の積み上げ",
+  "expectation": "二学期の始まりと協会からの調査依頼",
+  "reward": "宿題を終え、白峰の距離の謎を知り、調査を受諾",
+  "state_change": "調査日が決まる",
+  "boundary_confidence": "中",
+  "boundary_reason": "51話の宿題と52話の依頼、53話の部活もめ事が続き、53話の扱いで二通りある"
+ },
+ {
+  "start": 54,
+  "end": 56,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "白峰の岩壁の設備は何をするか",
+  "reward": "次元魔法適性の処置、後遺症、薄い面の発見",
+  "state_change": "能力が約1.5倍になる",
+  "boundary_confidence": "高",
+  "boundary_reason": "54話で処置を受け、55話で後遺症と回復、56話で実習が通常に戻る"
+ },
+ {
+  "start": 57,
+  "end": 58,
+  "kind": "関係の進展",
+  "expectation": "黒田の転校と見送り",
+  "reward": "四人でゲームセンターとファミレスに行き見送る",
+  "state_change": "黒田が去り、日常へ戻る",
+  "boundary_confidence": "高",
+  "boundary_reason": "57話で転校が分かり、58話で見送りが済む。59話は探索へ"
+ },
+ {
+  "start": 59,
+  "end": 61,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "白峰の未探索路、旧B級との再戦",
+  "reward": "B級を倒し円筒都市を発見、次元干渉Ⅰを得る",
+  "state_change": "D級昇格が見込まれ体育祭代表に",
+  "boundary_confidence": "高",
+  "boundary_reason": "59話の再戦から60話の重傷、61話の診察と昇格通告で状態が変わる"
+ },
+ {
+  "start": 62,
+  "end": 64,
+  "kind": "日常の積み上げ",
+  "expectation": "体育祭の出場",
+  "reward": "雷霆Ⅱ、素材68万円、D級昇格、榊との距離",
+  "state_change": "榊を男女として意識し始める",
+  "boundary_confidence": "中",
+  "boundary_reason": "62〜63話の行事と報酬、64話の榊との気まずさで切る二通りがある"
+ },
+ {
+  "start": 65,
+  "end": 69,
+  "kind": "山場と余波",
+  "expectation": "母の位置情報、生産保全区画の大型個体",
+  "reward": "大型個体を撃破、母の「生きてる」の伝言を受け取る",
+  "state_change": "追いつくと決意",
+  "boundary_confidence": "高",
+  "boundary_reason": "65話で母の位置が出て、66話で敗走、68話で撃破、69話で伝言が届き、70話で別の事件へ"
+ },
+ {
+  "start": 70,
+  "end": 73,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "朝露で魔物が減った異変の理由",
+  "reward": "C級の剛腕猿を倒し、C級に昇格",
+  "state_change": "朝露が再開される",
+  "boundary_confidence": "高",
+  "boundary_reason": "70話で異変、71話でC級を倒し、72話で説明、73話でC級昇格と再開"
+ },
+ {
+  "start": 74,
+  "end": 80,
+  "kind": "山場と余波",
+  "expectation": "スタンピード、分断された迷宮で生き残れるか",
+  "reward": "人型と戦って重傷、大集団を発見して生還、流出が鎮静化",
+  "state_change": "人型の存在が協会に把握される",
+  "boundary_confidence": "中",
+  "boundary_reason": "74話は日常の買い物でスタンピード前夜に当たり、75話から始めるか二通りある。80話で事後の収束が終わる"
+ },
+ {
+  "start": 81,
+  "end": 83,
+  "kind": "外の反応の回",
+  "expectation": "傷の治りと報酬、作戦への参加",
+  "reward": "200万円の装備、S級の正体判明、作戦会議で顔合わせ",
+  "state_change": "作戦の参加が決まる",
+  "boundary_confidence": "高",
+  "boundary_reason": "81話から82話は後日談で、83話で作戦会議、84話から突入が始まる"
+ },
+ {
+  "start": 84,
+  "end": 88,
+  "kind": "山場と余波",
+  "expectation": "人型の王と精鋭との戦い",
+  "reward": "分断を越えて王らしい男を倒し、全員が生還",
+  "state_change": "LEVEL38、結晶が協会管理に",
+  "boundary_confidence": "高",
+  "boundary_reason": "84話の突入から87話の決着、88話の帰還と報告で閉じ、89話から日常"
+ },
+ {
+  "start": 89,
+  "end": 91,
+  "kind": "日常の積み上げ",
+  "expectation": "文化祭準備と箱の解析、壊れた装備の対処",
+  "reward": "箱の解析を承認、新装備の製造開始",
+  "state_change": "装備が完成間近",
+  "boundary_confidence": "中",
+  "boundary_reason": "89〜91話は日常と準備で、92話の再起動の事件につなげるか二通りある"
+ },
+ {
+  "start": 92,
+  "end": 94,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "白峰の再起動と箱",
+  "reward": "2000万円入金、白峰立ち入り停止、箱が開く",
+  "state_change": "ミメシスという機械を手にする",
+  "boundary_confidence": "高",
+  "boundary_reason": "92話で再起動、93話で停止と報酬、94話で箱が開いて朝霧に戻る"
+ },
+ {
+  "start": 95,
+  "end": 99,
+  "kind": "関係の進展",
+  "expectation": "文化祭と榊の気持ち",
+  "reward": "Rookとの食事会、文化祭、榊の告白の立ち聞き",
+  "state_change": "湊が榊を気にし始める",
+  "boundary_confidence": "高",
+  "boundary_reason": "95話の食事会から文化祭当日、97〜98話の告白の件、99話の戸惑いで関係が動く"
+ },
+ {
+  "start": 100,
+  "end": 100,
+  "kind": "事件の発生〜短期決着",
+  "expectation": "ASGの空間のずれの正体",
+  "reward": "ミメシスの命名と、空間の異常の発見",
+  "state_change": "未解決のまま続く",
+  "boundary_confidence": "低",
+  "boundary_reason": "100話で終わりのため、まとまりの終点が印から分からず便宜上の区切り"
+ }
+]
