@@ -23,10 +23,18 @@ UA = "pachi-book-research (contact via GitHub pachimi14/pachi-book)"
 DELAY = 1.2
 
 
-def get(url):
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return r.read().decode("utf-8", "replace")
+def get(url, tries=3):
+    """取る。固まる接続があるので、短い打ち切り（30 秒）と再試行（3 回）を入れる（2026-10-16：1 時間半止まった）。"""
+    last = None
+    for k in range(tries):
+        req = urllib.request.Request(url, headers={"User-Agent": UA, "Connection": "close"})
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                return r.read().decode("utf-8", "replace")
+        except Exception as ex:  # noqa: BLE001
+            last = ex
+            time.sleep(3 * (k + 1))
+    raise RuntimeError(f"{url}: {last}")
 
 
 def next_data(h):

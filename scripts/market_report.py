@@ -37,6 +37,48 @@ def line_kind(name):
     return "その他"
 
 
+def group_summary(works, groups):
+    """組ごとの要約（1〜30 話に限る。★が付く範囲を比べるため）。"""
+    import statistics as st
+    agg = {}
+    for meta, rows in works:
+        g = (groups.get(meta["id"]) or {}).get("group") or "（組なし）"
+        a = agg.setdefault(g, {"works": 0, "n": 0, "sol": 0, "event": 0, "daily": 0, "react": 0, "act": 0, "lines3": 0,
+                                "hook": collections.Counter(), "chars": [], "dial": [], "same_hook": 0, "repeat": 0})
+        a["works"] += 1
+        prev_h = None
+        for r in rows:
+            if int(r.get("n", 0)) > 30:
+                continue
+            a["n"] += 1
+            a["sol"] += bool(r.get("slice_of_life"))
+            a["event"] += r.get("type") == "事件"
+            a["daily"] += r.get("type") == "日常・会話"
+            rp = r.get("reaction")
+            a["react"] += bool(rp.get("present") if isinstance(rp, dict) else rp)
+            a["act"] += bool((r.get("hero_act") or "").strip())
+            a["lines3"] += len(r.get("lines") or []) >= 3
+            h = (r.get("hook") or {}).get("type", "なし")
+            a["hook"][h] += 1
+            a["same_hook"] += (h == prev_h)
+            prev_h = h
+            a["repeat"] += bool((r.get("repeat") or "").strip())
+            m = r.get("mech") or {}
+            if m.get("chars"):
+                a["chars"].append(m["chars"])
+                a["dial"].append(m.get("dialog_ratio", 0))
+    print("## 組ごとの要約（1〜30 話だけ。★が付く範囲）\n")
+    print("| 組 | 作品 | 話 | 事件の回 | 日常・会話の回 | 日常回（事件なし） | 外の反応あり | 自分から動く | 線 3 本以上 | 再演で返事が変わる | 引きが前の話と同じ型 | 引き：日常の締め | 引き：危機 | 引き：約束・予告 | 引き：笑い | 字数 | 台詞の行 |")
+    print("|---|" + "---|" * 16)
+    for g, a in sorted(agg.items(), key=lambda kv: -kv[1]["works"]):
+        n = a["n"] or 1
+        hk = a["hook"]
+        print(f"| {g} | {a['works']} | {a['n']} | {pct(a['event'], n)} | {pct(a['daily'], n)} | {pct(a['sol'], n)} | {pct(a['react'], n)} | {pct(a['act'], n)} | {pct(a['lines3'], n)} | {pct(a['repeat'], n)} | {pct(a['same_hook'], n)} | "
+              f"{pct(hk['日常の締め'], n)} | {pct(hk['危機'], n)} | {pct(hk['約束・予告'] + hk['予告・約束'] + hk['予告'], n)} | {pct(hk['笑い'], n)} | "
+              f"{int(st.median(a['chars'])) if a['chars'] else '-'} | {st.median(a['dial']):.2f} |" if a["dial"] else f"| {g} | {a['works']} | {a['n']} | — |")
+    print()
+
+
 def pct(c, total):
     return f"{100 * c / total:.0f}%" if total else "-"
 
@@ -45,8 +87,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--corpus", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--groups", default=None, help="groups.json（作品ごとの組）。あれば組ごとの要約表を先頭に出す")
+    ap.add_argument("--extra", default=None, help="比べたい作品の corpus（自作など。印は <out>/own/ にある前提）")
     a = ap.parse_args()
     corpus, out = Path(a.corpus).expanduser(), Path(a.out).expanduser()
+    groups = json.loads(Path(a.groups).read_text(encoding="utf-8")) if a.groups and Path(a.groups).is_file() else {}
     works = []
     for d in sorted(out.iterdir()):
         lab = d / "labels.jsonl"
@@ -55,7 +100,17 @@ def main():
             continue
         rows = sorted((json.loads(l) for l in lab.read_text(encoding="utf-8").splitlines() if l.strip()), key=lambda r: int(r.get("n", 0)))
         works.append((json.loads(meta_p.read_text(encoding="utf-8")), rows))
+    if a.extra:
+        ex = Path(a.extra).expanduser()
+        for d in sorted(ex.iterdir()):
+            lab = out / "own" / d.name / "labels.jsonl"
+            if (d / "meta.json").is_file() and lab.is_file():
+                rows = sorted((json.loads(l) for l in lab.read_text(encoding="utf-8").splitlines() if l.strip()), key=lambda r: int(r.get("n", 0)))
+                works.append((json.loads((d / "meta.json").read_text(encoding="utf-8")), rows))
+                groups[d.name] = {"group": "本作"}
     print(f"# 作品横断の数え上げ（{len(works)} 作、{sum(len(r) for _, r in works)} 話）\n")
+    if groups:
+        group_summary(works, groups)
 
     # 型の割合（位置ごと）
     types = collections.defaultdict(collections.Counter)
