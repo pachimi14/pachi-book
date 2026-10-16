@@ -13,10 +13,10 @@ import argparse
 import json
 from pathlib import Path
 
-PENDING_EPISODE = ["reward.types（面白さの型の番号。fun の一行を型に当てる追加の分析）",
-                   "delivery.kind（報酬の実現方法の分類：場面／反応／描写。shown_by と reaction.role から後で付ける）",
+PENDING_EPISODE = ["delivery.kind（報酬の実現方法の分類：場面／反応／描写。shown_by と reaction.role から後で付ける）",
                    "relation_to_prior.callbacks（既出展開との関係。再演（repeat）以外はまだ無い）",
-                   "position.block_inferred（market_blocks.py がまだ回っていない作品では null）"]
+                   "position.block_inferred（market_blocks.py がまだ回っていない作品では null）",
+                   "reward.types（market_fun_assign.py がまだ回っていない作品では null）"]
 
 
 def load_jsonl(p):
@@ -67,6 +67,7 @@ def export_work(wid, corpus_dir, label_dir, groups, own=False):
     track = json.loads((corpus_dir / "track.json").read_text(encoding="utf-8")) if (corpus_dir / "track.json").is_file() else None
     labels = sorted((r for r in load_jsonl(label_dir / "labels.jsonl") if str(r.get("n", "")).isdigit()), key=lambda r: int(r["n"]))
     blocks = json.loads((label_dir / "blocks.json").read_text(encoding="utf-8")) if (label_dir / "blocks.json").is_file() else None
+    ft = json.loads((label_dir / "fun_types.json").read_text(encoding="utf-8")) if (label_dir / "fun_types.json").is_file() else None
     g = "本作" if own else (groups.get(wid) or {}).get("group")
     work = {"id": wid, "title": meta.get("title"), "group": g, "tags": meta.get("tags"), "published_at": meta.get("publishedAt"),
             "stars": meta.get("totalReviewPoint"), "episode_count": meta.get("publicEpisodeCount"),
@@ -95,7 +96,7 @@ def export_work(wid, corpus_dir, label_dir, groups, own=False):
                          "block_inferred": block_of(blocks, n)},
             "before": before,
             "event": {"type": r.get("type"), "summary": r.get("summary"), "event": r.get("event"), "hero_act": r.get("hero_act")},
-            "reward": {"fun": r.get("fun"), "types": None, "hook": r.get("hook"),
+            "reward": {"fun": r.get("fun"), "types": (ft.get(str(n)) if ft is not None else None), "hook": r.get("hook"),
                        "reaction": rp if isinstance(rp, dict) else {"present": bool(rp), "role": None},
                        "slice_of_life": r.get("slice_of_life")},
             "delivery": {"kind": None, "shown_by": [l.get("shown_by") for l in lines if l.get("shown_by")],

@@ -31,7 +31,7 @@ pending         [まだ無い項目の名前]
 | 1. 階層 | 章・固定窓は取得済み。推定ブロックは market_blocks.py で付ける（進行中） | 章は目次から。固定窓（3・4・5 話）は統計用で機械。物語上のまとまりは印から推定し、境界ごとに信頼度（高／中／低）と根拠を持つ。4 話で切ったものを正式なブロックとは呼ばない（2026-10-16 オーナー） |
 | 2. 展開前の状態 | 一部 | 動いた線の「前の段」と、前の話の after。話の頭の全人物の状態は 5 話ごとの state.json にしか無い |
 | 3. 起きた出来事 | 取得済み | 型・要約・事件・主人公が自分からすること |
-| 4. 読者報酬 | 一行は取得済み。型の番号は未 | fun の一行を面白さの型に当てる追加の分析（LLM 一回。一覧が確定してから） |
+| 4. 読者報酬 | 取得済み | fun の一行と、面白さの型の番号（reward.types。FUN-TYPES.md の 1〜25、0＝当たらない。market_fun_assign.py、sonnet・low で作品ごとに一回）。型 × 組 × 位置の割合は ../FUN-TYPES-COUNTS.md。型の当て方の誤りを含む |
 | 5. 実現方法 | 一部 | shown_by（表れ方）と reaction.role はある。「場面／反応／描写」の分類は未 |
 | 6. 展開後の状態 | 一部 | 動いた線の「今の段」。人物の関係の段は state.json |
 | 7. 既出展開との関係 | 一部 | 再演で返事が変わるもの（repeat）だけ。呼び戻し・昇格・反転の関係は未 |
@@ -45,7 +45,7 @@ pending         [まだ無い項目の名前]
 
 ## 停止（2026-10-16 08:20 UTC。利用枠のため）
 - 済み：収集 45 作・3,115 話、印 45 作・3,120 話（全部）、推定ブロック 39 作、作品ごとのまとめ 21 作、★・PV の時系列、export（45 作）、STATS.md。
-- 追記（同日）：推定ブロックの残りと、面白さの型の一覧の全作での作り直し（sonnet）は済み。未はまとめの残り 24 作だけ（読み物。export には入らない）。
+- 追記（同日）：推定ブロックの残りと、面白さの型の一覧の全作での作り直し（sonnet）は済み。型の番号（reward.types）も全作に付けた（同日、残り 11% の枠で）。未はまとめの残り 24 作と、delivery.kind・callbacks の二回目の印付け（②③で要るとき）。
 - 再開（作業フォルダで。LLM を使うのはこの三行だけ。どれも済んだ作品は飛ばす）：
   python3 ../pachi-book/scripts/market_blocks.py --out research/story-structure-2026-10 --workers 1
   python3 ../pachi-book/scripts/market_fun_types.py --out research/story-structure-2026-10 --groups research/story-structure-2026-10/groups.json --extra-own research/story-structure-2026-10/own --corpus <corpus>
